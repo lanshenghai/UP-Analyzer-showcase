@@ -205,6 +205,22 @@
     .l2ps-sub-tabs { margin-top: 2px; }
     .l2ps-sub-tabs .tab-list-item { font-size: 10px; height: 18px; padding: 1px 0.35em; }
 
+    /* Statistics heatmap tables (DL/Statistics) */
+    .selected-range {
+      font-size: 11px; margin: 4px 8px 6px; font-family: Verdana, sans-serif; color: #333;
+    }
+    .range-times { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; font-size: 10px; color: #555; }
+    .range-times span { padding: 2px 6px; background: #e3f2fd; border-radius: 2px; }
+    .stats-block { margin: 6px 4px 10px; }
+    .stats-title { font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 4px; font-family: Verdana, sans-serif; }
+    .stats-scroll { overflow: auto; max-height: 280px; }
+    .stats-heatmap { border-collapse: collapse; font-size: 9px; font-family: Verdana, sans-serif; }
+    .stats-heatmap th, .stats-heatmap td { border: 1px solid #bbb; padding: 2px 4px; text-align: center; min-width: 28px; }
+    .stats-heatmap th { background: #f4f4f4; font-weight: normal; }
+    .stats-heatmap td { color: #1a1a1a; }
+    .stats-heatmap .avg-col { background: #ffcc80 !important; font-weight: bold; }
+    .stats-heatmap tr.avg-row th, .stats-heatmap tr.avg-row td { background: #e1bee7 !important; font-weight: bold; }
+
     /* overlays */
     .lb-overlay, .ide-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35);
@@ -452,15 +468,73 @@
         '<div class="tti-chart-block">' + ttiChartHead('dlTdSchedSubcellData numOfPrb') + ttiSubcellChart() + '</div>';
     }
 
+    function heatColor(v) {
+      if (v > 0.85) return '#04b404';
+      if (v > 0.65) return '#52cb54';
+      if (v > 0.45) return '#75d679';
+      if (v > 0.25) return '#b8e6b9';
+      return '#eafaf1';
+    }
+
+    function statsHeatmapTable(title, rowCount, colCount, seed) {
+      let html = '<div class="stats-block"><div class="stats-title">' + title + '</div><div class="stats-scroll"><table class="stats-heatmap"><tr><th></th>';
+      for (let c = 0; c < colCount; c++) html += '<th>' + c + '</th>';
+      html += '<th class="avg-col">avg</th></tr>';
+      const rowAvgs = [];
+      for (let r = 0; r < rowCount; r++) {
+        html += '<tr><th>' + r + '</th>';
+        let rowSum = 0;
+        for (let c = 0; c < colCount; c++) {
+          const v = ((seed + r * 17 + c * 31) % 97) / 97;
+          const disp = (v * 2.8).toFixed(2);
+          rowSum += parseFloat(disp);
+          html += '<td style="background:' + heatColor(v) + '">' + disp + '</td>';
+        }
+        const rowAvg = (rowSum / colCount).toFixed(2);
+        rowAvgs.push(parseFloat(rowAvg));
+        html += '<td class="avg-col">' + rowAvg + '</td></tr>';
+      }
+      html += '<tr class="avg-row"><th>avg</th>';
+      for (let c = 0; c < colCount; c++) {
+        let colSum = 0;
+        for (let r = 0; r < rowCount; r++) {
+          const v = ((seed + r * 17 + c * 31) % 97) / 97;
+          colSum += v * 2.8;
+        }
+        html += '<td>' + (colSum / rowCount).toFixed(2) + '</td>';
+      }
+      const grand = (rowAvgs.reduce((a,b)=>a+b,0) / rowAvgs.length).toFixed(2);
+      html += '<td class="avg-col">' + grand + '</td></tr></table></div></div>';
+      return html;
+    }
+
+    function statisticsView() {
+      return '<div class="tti-toolbar">' +
+        '<button class="p-btn preview-on">Preview Enabled</button>' +
+        '<button class="p-btn p-btn-outlined">Expand All</button><button class="p-btn p-btn-outlined">Collapse All</button><button class="p-btn p-btn-outlined">Save Page</button></div>' +
+        '<div class="selected-range"><b>Selected Range:</b><div class="range-times">' +
+        '<span>2026-07-29 20:13:33</span><span>2026-07-29 20:16:05</span><span>2026-07-29 20:16:17</span></div></div>' +
+        statsHeatmapTable('Average Schedule Count Table', 32, 10, 42) +
+        statsHeatmapTable('Average CSI-RS Schedule Count Table', 32, 10, 87);
+    }
+
+    function l2psSubTabPanel(defaultSub, subViews) {
+      const dlSubTabs = L2PS_DL_SUB.map(t =>
+        '<li class="tab-list-item' + (t === defaultSub ? ' tab-list-active' : '') + '" data-l2ps-sub="' + t + '">' + t + '</li>'
+      ).join('');
+      const bodies = L2PS_DL_SUB.map(t => {
+        const content = subViews[t] || ('<div class="mono">DL / ' + t + ' — synthetic trace view</div>');
+        const wrapped = typeof content === 'string' && content.indexOf('tti-toolbar') >= 0 ? content : item(t, content, 120);
+        return '<div class="l2ps-sub-body" data-l2ps-sub-body="' + t + '" style="display:' + (t === defaultSub ? 'block' : 'none') + '">' + wrapped + '</div>';
+      }).join('');
+      return '<div class="tabs l2ps-sub-tabs"><ol class="tab-list">' + dlSubTabs + '</ol><div class="tab-content" style="border:none;padding:4px 0">' + bodies + '</div></div>';
+    }
+
     function l2psPanel() {
-      const tabs = L2PS_TABS.map((t,i) => '<li class="tab-list-item' + (t==='DL'?' tab-list-active':'') + '" data-l2ps="' + t + '">' + t + '</li>').join('');
-      const dlSubTabs = L2PS_DL_SUB.map((t,i) => '<li class="tab-list-item' + (t==='Cell'?' tab-list-active':'') + '" data-l2ps-sub="' + t + '">' + t + '</li>').join('');
-      const dlBody = '<div class="tabs l2ps-sub-tabs"><ol class="tab-list">' + dlSubTabs + '</ol><div class="tab-content" style="border:none;padding:4px 0">' +
-        '<div class="l2ps-sub-body" data-l2ps-sub-body="Cell">' + dlCellView() + '</div>' +
-        L2PS_DL_SUB.filter(t => t !== 'Cell').map(t =>
-          '<div class="l2ps-sub-body" data-l2ps-sub-body="' + t + '" style="display:none">' +
-          item(t, '<div class="mono">DL / ' + t + ' — synthetic trace view</div>', 120) + '</div>'
-        ).join('') + '</div></div>';
+      const tabs = L2PS_TABS.map(t => '<li class="tab-list-item' + (t==='DL'?' tab-list-active':'') + '" data-l2ps="' + t + '">' + t + '</li>').join('');
+      const dlSubViews = { Cell: dlCellView(), Statistics: statisticsView() };
+      const dlBody = l2psSubTabPanel('Cell', dlSubViews);
+      const schedulingBody = l2psSubTabPanel('Statistics', { Statistics: statisticsView(), Cell: dlCellView() });
       const bodies = {
         DL: dlBody,
         UL: item('UL Cell', heatmap(14, 4, i => 'hsl(200,'+(35+(i%10)*5)+'%,'+(50+(i%6)*4)+'%)'), 160),
@@ -472,7 +546,7 @@
         PmCounter: item('PmCounter', sparkline([55,58,62,60,57,54,52,50,48,52,58,63,61,59,56,54])),
         DRX: item('DRX', '<div class="mono">UE-17042 DRX cycle 40ms · On Duration slot 641:16</div>'),
         DSS: item('DSS DL Bitmap', heatmap(10, 2, i => 'hsl(40,'+(30+(i%8)*8)+'%,70%)')),
-        Scheduling: item('Scheduling Table', table(['SFN:Slot','UE','Type'], [['641:16','17042','DL'],['641:17','17043','UL']])),
+        Scheduling: schedulingBody,
         'UE Table': item('UE Table', table(['RNTI','C-RNTI','MCS DL','HARQ'], [['0x2A','17042','27','OK'],['0x2B','17043','24','NACK×2']])),
         AutoAnalyzer: '<div class="isa_info" style="margin-top:0">AutoAnalyzer — tti_trace_reminder</div>' + item('规则命中', '<div class="mono"><span class="rule-hit">[UE-42] DL grant 连续 3 slot 缺失</span><br><span class="rule-hit">[Cell-111] PDCCH CCE &gt; 85%</span></div>'),
         Troubleshooting: item('Troubleshooting', '<div class="link-list" style="padding:0"><a href="#">DL RLC Latency guide</a><br><a href="#">RACH troubleshooting guide</a></div>'),
@@ -727,11 +801,11 @@
       document.querySelectorAll('[data-l2ps-sub]').forEach(tab => {
         tab.addEventListener('click', () => {
           const list = tab.closest('.tab-list');
+          const container = tab.closest('.l2ps-sub-tabs');
           list.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
           tab.classList.add('tab-list-active');
           const k = tab.dataset.l2psSub;
-          const dlBody = tab.closest('.l2ps-sub-tabs');
-          if (dlBody) dlBody.querySelectorAll('.l2ps-sub-body').forEach(b => b.style.display = b.dataset.l2psSubBody === k ? 'block' : 'none');
+          container.querySelectorAll('.l2ps-sub-body').forEach(b => b.style.display = b.dataset.l2psSubBody === k ? 'block' : 'none');
         });
       });
     }

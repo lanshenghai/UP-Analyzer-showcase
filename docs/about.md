@@ -33,13 +33,12 @@ UP-Analyzer 是我在担任实时系统架构师的本职工作之余，独立�
 
 | 资源 | 说明 |
 |------|------|
-| [架构设计](https://lanshenghai.github.io/UP-Analyzer-showcase/architecture.html) | 系统分层与关键工程决策 |
-| [5 分钟演示脚本](https://lanshenghai.github.io/UP-Analyzer-showcase/demo-video-script.html) | 录制作品集 Demo 视频的分镜稿 |
-| [录制指南](https://lanshenghai.github.io/UP-Analyzer-showcase/recording-guide.html) | OBS 设置、脱敏检查、导出参数 |
-| [AI 调查流水线](https://lanshenghai.github.io/UP-Analyzer-showcase/ai-investigation.html) | 分阶段 Gate 自动化根因分析 |
-| [调查报告样例](https://lanshenghai.github.io/UP-Analyzer-showcase/sample-report.html) | 脱敏端到端调查示例 |
-| [在线交互演示](https://lanshenghai.github.io/UP-Analyzer-showcase/demo.html) | 浏览器 UI 模拟，可用于截图与录屏 |
-| [文档站点首页](https://lanshenghai.github.io/UP-Analyzer-showcase/) | 全部子页面导航 |
+| [架构设计](architecture.html) | 系统分层与关键工程决策 |
+| [5 分钟演示脚本](demo-video-script.html) | 录制作品集 Demo 视频的分镜稿 |
+| [录制指南](recording-guide.html) | OBS 设置、脱敏检查、导出参数 |
+| [AI 调查流水线](ai-investigation.html) | 分阶段 Gate 自动化根因分析 |
+| [调查报告样例](sample-report.html) | 脱敏端到端调查示例 |
+| [在线交互演示](demo.html) | 浏览器 UI 模拟，可用于截图与录屏 |
 
 ---
 
@@ -121,7 +120,7 @@ UP-Analyzer 是我在担任实时系统架构师的本职工作之余，独立�
 🎬 演示视频：（待录制 — 见 docs/recording-guide.md）
 ```
 
-**在线演示：** https://lanshenghai.github.io/UP-Analyzer-showcase/demo.html
+**在线演示：** [demo.html](demo.html)
 
 ---
 

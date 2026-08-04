@@ -22,11 +22,14 @@
       padding: 3px; margin: -8px -8px 4px; border-bottom: 1px solid #e6c200;
     }
 
-    .app-header { position: relative; min-height: 28px; margin-bottom: 3px; }
+    .app-header { position: relative; min-height: 42px; margin-bottom: 3px; }
     .version {
-      position: absolute; top: 5px; left: 50%; transform: translateX(-50%);
-      display: flex; align-items: center; gap: 8px; z-index: 1;
+      position: absolute; top: 2px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0; z-index: 1;
     }
+    .upa-title { font-size: 14px; font-weight: bold; line-height: 1.2; }
+    .version-row { display: flex; align-items: center; gap: 8px; min-height: 20px; }
+    .version-row label { font-size: inherit; }
     .whats-new { font-size: 12px; color: #124191; text-decoration: underline; cursor: pointer; }
     .top-right {
       position: absolute; right: 10px; top: 0; display: flex; align-items: center;
@@ -72,7 +75,21 @@
       font-size: 14px; font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
       color: #0000ee; text-decoration: underline; cursor: pointer;
     }
-    .files-block { position: relative; margin-bottom: 6px; }
+    .files-block { position: relative; margin-bottom: 6px; min-height: 22px; }
+    .snapshot-tags {
+      position: absolute; right: 110px; top: 0; display: flex; gap: 5px; z-index: 2;
+    }
+    .extract-btn {
+      position: absolute; right: 0; top: -2px;
+    }
+    .cell-mapping-title {
+      text-align: center; font-weight: bold; font-size: 12px; margin: 4px 0 6px;
+      font-family: Verdana, sans-serif;
+    }
+    .cell-mapping-scroll { overflow-x: auto; }
+    .data-table.dense { font-size: 10px; white-space: nowrap; }
+    .data-table.dense th, .data-table.dense td { padding: 2px 5px; }
+    .data-table tr.row-online td { background: #90EE90; }
     .show-files { font: normal 12px "Courier New", Courier, Monospace; line-height: 1.4em; word-break: break-all; }
     .colored-filename { cursor: pointer; padding: 0 2px; }
     .tags { display: flex; position: absolute; right: 10px; top: 0; gap: 5px; }
@@ -188,13 +205,16 @@
   <div class="demo-strip">⚠️ 脱敏交互演示 — 界面与 Tab 结构对齐真实 UP-Analyzer，数据均为虚构。按 Esc 关闭弹窗。</div>
 
   <div class="app-header">
-    <div class="version"><label>v12.1.1</label><span class="whats-new">更新说明</span></div>
+    <div class="version">
+      <div class="upa-title">UP-Analyzer</div>
+      <div class="version-row"><label>v12.1.1</label><span class="whats-new">What's new</span></div>
+    </div>
     <div class="top-right">
-      <input class="search-box" placeholder="搜索…" readonly>
+      <input class="search-box" placeholder="" readonly title="Search">
       <button class="p-btn" onclick="showLogBrowser()">LogBrowser</button>
       <button class="p-btn">TtiTraceHelper</button>
       <button class="p-btn">帮助</button>
-      <button class="p-btn p-btn-outlined" onclick="showIdeDemo()">IDE 演示</button>
+      <button class="p-btn p-btn-outlined" onclick="showIdeDemo()">IDE</button>
     </div>
   </div>
 
@@ -237,14 +257,21 @@
   (function () {
     const FILE_COLORS = ['#FFCCCC','#CCFFCC','#CCCCFF','#FFFFCC','#FFCCFF','#CCFFFF'];
     const SYNTHETIC_FILES = [
-      'C:/demo/SITE-001_R3.2.1_BLD_000004/snapshot.zip',
-      'C:/demo/SITE-001_R3.2.1_BLD_000004/L2_ProtocolStack/',
-      'C:/demo/SITE-001_R3.2.1_BLD_000004/L3_ControlPlane/',
-      'C:/demo/SITE-001_R3.2.1_BLD_000004/Syslog/',
+      'D:\\\\UserData\\\\demo\\\\Snapshot_MRBTS-405160_D530_SBTS25R1_ENB_9995_260729_000003_20260729-2021.zip',
     ];
+    const DEMO_SW_VERSION = '5G21A_B12_260729_000003';
+    const DEMO_SNAPSHOT_TIME = '2026-07-29T20:21:37Z';
 
     function openRow() {
-      return '<div class="open-row"><span class="open-file" data-action="load">打开文件</span><span style="color:#888">|</span><span class="open-file" data-action="load">打开文件夹</span></div>';
+      return '<div class="open-row"><span>Analyze:</span><span class="open-file" data-action="load">Open File</span><span style="color:#888">|</span><span class="open-file" data-action="load">Open Folder</span></div>';
+    }
+    function denseTable(headers, rows, greenRows) {
+      const th = headers.map(h => '<th>' + h + '</th>').join('');
+      const tr = rows.map((r, i) => {
+        const cls = greenRows && greenRows[i] ? ' class="row-online"' : '';
+        return '<tr' + cls + '>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>';
+      }).join('');
+      return '<table class="data-table dense"><tr>' + th + '</tr>' + tr + '</table>';
     }
     function item(legend, body, minH) {
       return '<div class="item" style="min-height:' + (minH || 140) + 'px"><div class="handler"></div><div class="fieldset"><div class="fieldset-legend">' + legend + '</div><div class="fieldset-body">' + body + '</div></div></div>';
@@ -270,37 +297,71 @@
       }).join('') + '</div>';
     }
 
-    /* ── Snapshot inner views ── */
-    const SNAP_VIEWS = {
-      cell: item('CellMapping', table(['小区 ID','lcrId','频段','PCI','状态'], [
-        ['NRCELL-111','111','n78','111','激活'],['NRCELL-112','112','n78','112','激活'],['NRCELL-113','113','n78','113','未激活']
-      ])),
-      syslog: item('Syslog 摘要', '<div class="mono">[ERROR] L2_PS PDCCH CCE pool exhausted (cell 111)<br>[WARN] RF calibration retry on RMOD_L-1<br>[INFO] Snapshot captured 2026-03-04 12:00:00</div>'),
-      kpi: item('PM 计数器快照', table(['计数器','NRCELL-111','NRCELL-112'], [
-        ['COUNTER_AVAIL_CH','568,425,464','412,003,221'],['COUNTER_USED_CH','498,221,100','380,112,004'],['COUNTER_SLOT_CH','12,004,882','11,998,441']
-      ])),
-      l2ps: item('L2Ps Trace 文件', '<div class="mono">0:C:/demo/.../ttitrace_cell111.bin (2.4 MB)<br>1:C:/demo/.../ttitrace_cell112.bin (1.8 MB)</div>'),
-      build: item('Build Info', table(['组件','版本','构建号'], [
-        ['L2-PS','R3.2.1','BLD_000004'],['L1-HB','R3.2.1','BLD_000004'],['RF','R3.2.0','BLD_000398']
-      ])),
-      rf: item('RF Syslog — Calibration (bfcali)', '<div class="isa_info" style="margin-top:0">RMOD_L-1 · RX_1_200_371301 · 解码完成</div>' + table(['子带','幅度均值','相位(°)'], [
-        ['0','0.82','−12.4'],['1','0.79','−8.1'],['2','0.85','−15.2'],['3','0.81','−11.0']
-      ])),
-      webem: item('WebEM 在线预览', '<div style="border:1px solid #ccc;height:160px;background:linear-gradient(#f8f9fa,#e9ecef);display:flex;align-items:center;justify-content:center;color:#666;font-size:12px">ADMIN.html 嵌入预览 — 站点配置树 · NRCELL-111 参数页</div>'),
-      beam: item('SS Beam Info', beamGrid() + '<p style="font-size:11px;color:#888;margin-top:8px">32 波束 SS-RSRP 热力图（合成数据）</p>'),
-    };
+    /* Snapshot tabs — from tools/5G/Snapshot/Main.py + common configurations */
+    const SNAP_TAB_LABELS = [
+      'CellMapping', 'Deployment', 'EventQueue', 'R&D Parameters', 'Bandwidth Info',
+      'Beams', 'SlotType', 'Pdcch Calc', 'RF', 'L1 HB', 'L2', 'Syslogs', 'TRS', 'KPI',
+      'Alarm History', 'Build Info', 'Parameters Change History', 'SW upgrade history', 'WebEM'
+    ];
+
+    function snapSlug(label) {
+      return label.toLowerCase().replace(/&/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+
+    function cellMappingView() {
+      const cols = ['ID','alarms','localId','status','physCellId','nrCellIdentity','cellDepType','band','technology','lcrId','nrarfcn','bandwidth','L2_LO','L2_PS'];
+      const rows = [
+        ['11','','111','Online','111','405160011','SA','n78','NR','111','620640','100MHz','0x2730<br>Marlin','0x2720<br>L2Ps'],
+        ['12','','112','Online','112','405160012','SA','n78','NR','112','620640','100MHz','0x2730<br>Marlin','0x2720<br>L2Ps'],
+      ];
+      return '<div class="cell-mapping-title">NRBTS-405160 D530</div><div class="cell-mapping-scroll">' +
+        denseTable(cols, rows, [true, true]) + '</div>';
+    }
+
+    function snapViewContent(label) {
+      switch (label) {
+        case 'CellMapping': return cellMappingView();
+        case 'Deployment': return denseTable(['poolId','nodeId','cellId','role'], [['10','0x224D Loki','111','DL+UL'],['13','0x225D Loki','112','DL+UL']], [true, true]);
+        case 'EventQueue': return '<div class="mono">EQ-001 · Cell setup complete · 2026-07-29 20:15:02<br>EQ-002 · Carrier activate · 2026-07-29 20:16:11</div>';
+        case 'R&D Parameters': return denseTable(['RD param','value'], [['rdUlSrsLogMask','1'],['rdDlSrsLogControl','1']], [false, false]);
+        case 'Bandwidth Info': return denseTable(['lcrId','DL BW','UL BW','SCS'], [['111','100 MHz','100 MHz','30 kHz'],['112','100 MHz','100 MHz','30 kHz']], [true, true]);
+        case 'Beams': return beamGrid() + '<p style="font-size:11px;color:#888;margin-top:6px">SS / IRC / DFT / PMI beam views</p>';
+        case 'SlotType': return denseTable(['Slot','DL type','UL type','k1'], [['0','SLOT_TYPE_B5','SLOT_TYPE_C4','4'],['1','SLOT_TYPE_B5','SLOT_TYPE_C4','4']], [true, true]);
+        case 'Pdcch Calc': return '<div class="mono">lcrId 111 · search_space: dedicated(1) · UE-Specific(8)<br>CCE candidates: PRB 12–15, 16–19 …</div>';
+        case 'RF': return '<div class="isa_info" style="margin:0 0 6px">RF|Syslog · bfcali calibration decode</div>' + denseTable(['RMOD','chain','subband','amplitude'], [['RMOD_L-1','RX_1','3','0.82'],['RMOD_L-1','RX_2','3','0.79']], [true, true]);
+        case 'L1 HB': return sparkline([20,35,42,38,45,52,48,40,35,30,38,44,50,46]) + '<p style="font-size:11px;color:#888;margin-top:6px">SRS History Buffer SNR</p>';
+        case 'L2': return '<div class="mono">L2Rt TimeMarker · L2Hb Trace · L2Ps Trace · L2Lo · L2HiDu · L2HiCu</div>';
+        case 'Syslogs': return '<div class="mono">[Current] L2_PS scheduler init OK<br>[Before Reset] RF calibration completed<br>[KnownIssues] —</div>';
+        case 'TRS': return denseTable(['TRS param','value'], [['trsPeriodicity','20ms'],['trsResource','slot 4']], [false, false]);
+        case 'KPI': return denseTable(['Counter','NRCELL-111','NRCELL-112'], [['COUNTER_AVAIL_CH','568,425,464','412,003,221'],['COUNTER_USED_CH','498,221,100','380,112,004']], [false, false]);
+        case 'Alarm History': return denseTable(['Time','Alarm','Severity'], [['20:10:01','7747','Minor'],['20:12:44','—','—']], [false, false]);
+        case 'Build Info': return denseTable(['Component','Version','Build'], [['L2-PS','25R1','B12_260729'],['L1-HB','25R1','B12_260729'],['RF','25R1','B12_260728']], [false, false, false]);
+        case 'Parameters Change History': return '<div class="mono">2026-07-28 · actDlMuMimo: false → true (NRCELL-111)</div>';
+        case 'SW upgrade history': return '<div class="mono">2026-07-20 · B12_260715 → B12_260729</div>';
+        case 'WebEM': return '<div style="border:1px solid #ccc;height:140px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;color:#666;font-size:12px">WebEM · ADMIN.html embedded preview</div>';
+        default: return '<div class="mono">' + label + ' view</div>';
+      }
+    }
+
+    function snapshotFileBar() {
+      return '<div class="files-block" id="files-block">' +
+        '<div class="snapshot-tags"><span class="tag-string">SwVersion: ' + DEMO_SW_VERSION + '</span><span class="tag-string">SnapshotTime: ' + DEMO_SNAPSHOT_TIME + '</span></div>' +
+        '<button class="p-btn extract-btn">Extract Files</button>' +
+        '<div class="show-files" id="file-list"><span class="colored-filename" style="background:#FFCCCC">0:' + SYNTHETIC_FILES[0] + '</span></div></div>';
+    }
 
     function snapshotPanel() {
-      const snapTabs = Object.keys(SNAP_VIEWS).map((k,i) =>
-        '<li class="tab-list-item' + (i===0?' tab-list-active':'') + '" data-snap="' + k + '">' +
-        ({cell:'CellMapping',syslog:'Syslog',kpi:'KPI',l2ps:'L2Ps Trace',build:'Build Info',rf:'RF Syslog',webem:'WebEM',beam:'SS BeamInfo'}[k]) + '</li>'
-      ).join('');
-      const bodies = Object.keys(SNAP_VIEWS).map((k,i) =>
-        '<div class="snap-body" data-snap-body="' + k + '" style="display:' + (i===0?'block':'none') + '">' + SNAP_VIEWS[k] + '</div>'
-      ).join('');
-      return '<div class="view-panel" data-view="snapshot">' + openRow() +
-        '<div class="files-block" id="files-block" style="display:none"><div class="tags"><span class="tag-string">SwVersion: R3.2.1_BLD_000004</span><span class="tag-string">SnapshotTime: 2026-03-04 12:00:00</span></div><div class="show-files" id="file-list"></div></div>' +
-        '<div class="tabs inner-tab-list" id="snap-tabs"><ol class="tab-list">' + snapTabs + '</ol><div class="tab-content">' + bodies + '</div></div></div>';
+      const snapTabs = SNAP_TAB_LABELS.map((label, i) => {
+        const slug = snapSlug(label);
+        return '<li class="tab-list-item' + (i === 0 ? ' tab-list-active' : '') + '" data-snap="' + slug + '">' + label + '</li>';
+      }).join('');
+      const bodies = SNAP_TAB_LABELS.map((label, i) => {
+        const slug = snapSlug(label);
+        return '<div class="snap-body" data-snap-body="' + slug + '" style="display:' + (i === 0 ? 'block' : 'none') + '">' +
+          item(label, snapViewContent(label), label === 'CellMapping' ? 220 : 160) + '</div>';
+      }).join('');
+      return '<div class="view-panel" data-view="snapshot">' + openRow() + snapshotFileBar() +
+        '<div class="tabs inner-tab-list" id="snap-tabs"><ol class="tab-list snap-tab-list">' + snapTabs + '</ol><div class="tab-content">' + bodies + '</div></div></div>';
     }
 
     const L2PS_TABS = ['DL','UL','PDCCH','RACH','Scheduling','AutoAnalyzer','UE Table','PmCounter'];

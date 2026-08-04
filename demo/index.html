@@ -216,19 +216,32 @@
 
     /* Statistics heatmap tables (DL/Statistics) */
     .selected-range {
-      font-size: 11px; margin: 4px 8px 6px; font-family: Verdana, sans-serif; color: #333;
+      font-size: 11px; margin: 4px 8px 2px; font-family: Verdana, sans-serif; color: #333;
     }
     .range-times { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; font-size: 10px; color: #555; }
     .range-times span { padding: 2px 6px; background: #e3f2fd; border-radius: 2px; }
-    .stats-block { margin: 6px 4px 10px; }
+    .range-bar {
+      position: relative; height: 22px; margin: 4px 12px 8px; border: 1px solid #b0bec5;
+      background: linear-gradient(to bottom, #fafafa, #eceff1); border-radius: 2px;
+    }
+    .range-bar-fill {
+      position: absolute; top: 3px; bottom: 3px; left: 8%; right: 18%;
+      background: linear-gradient(to bottom, #64b5f6, #42a5f5); border: 1px solid #1e88e5;
+      border-radius: 2px; opacity: 0.85;
+    }
+    .range-bar-tick {
+      position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed #e53935;
+    }
+    .stats-block { margin: 6px 4px 12px; }
     .stats-title { font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 4px; font-family: Verdana, sans-serif; }
-    .stats-scroll { overflow: auto; max-height: 280px; }
+    .stats-scroll { overflow: auto; }
     .stats-heatmap { border-collapse: collapse; font-size: 9px; font-family: Verdana, sans-serif; }
-    .stats-heatmap th, .stats-heatmap td { border: 1px solid #bbb; padding: 2px 4px; text-align: center; min-width: 28px; }
+    .stats-heatmap th, .stats-heatmap td { border: 1px solid #bbb; padding: 1px 3px; text-align: center; min-width: 26px; height: 14px; }
     .stats-heatmap th { background: #f4f4f4; font-weight: normal; }
-    .stats-heatmap td { color: #1a1a1a; }
-    .stats-heatmap .avg-col { background: #ffcc80 !important; font-weight: bold; }
-    .stats-heatmap tr.avg-row th, .stats-heatmap tr.avg-row td { background: #e1bee7 !important; font-weight: bold; }
+    .stats-heatmap td.cell-high { color: #fff; font-size: 8px; }
+    .stats-heatmap td.cell-low { background: #f8f8f8 !important; color: #444; }
+    .stats-heatmap .avg-col { background: #ffcc80 !important; color: #333 !important; font-weight: bold; }
+    .stats-heatmap tr.avg-row th, .stats-heatmap tr.avg-row td { background: #e1bee7 !important; font-weight: bold; color: #333; }
 
     /* Scheduling CsvTable (5G_Schedule_Table.json) */
     .sched-scroll { overflow: auto; max-height: 420px; margin: 4px; border: 1px solid #ccc; }
@@ -487,14 +500,30 @@
     }
 
     function heatColor(v) {
-      if (v > 0.85) return '#04b404';
-      if (v > 0.65) return '#52cb54';
-      if (v > 0.45) return '#75d679';
-      if (v > 0.25) return '#b8e6b9';
-      return '#eafaf1';
+      if (v > 0.88) return '#04b404';
+      if (v > 0.72) return '#2ebd2e';
+      if (v > 0.55) return '#52cb54';
+      if (v > 0.35) return '#8fdc91';
+      if (v > 0.15) return '#c8ecc9';
+      return '#f5f5f5';
     }
 
-    function statsHeatmapTable(title, rowCount, colCount, seed) {
+    function statsCell(seed, r, c, mode) {
+      const hash = (seed + r * 17 + c * 31) % 100;
+      const sparse = hash < 7 || (r === 14 && c === 3) || (r === 22 && c === 7);
+      if (sparse) {
+        const disp = (0.86 + (hash % 6) * 0.01).toFixed(2);
+        return { disp, norm: 0.12, cls: 'cell-low' };
+      }
+      if (mode === 'prb') {
+        const disp = (48 + (hash % 74)).toFixed(0);
+        return { disp, norm: 0.75 + (hash % 20) / 100, cls: 'cell-high' };
+      }
+      const disp = (2.45 + (hash % 36) / 100).toFixed(2);
+      return { disp, norm: 0.82 + (hash % 18) / 100, cls: 'cell-high' };
+    }
+
+    function statsHeatmapTable(title, rowCount, colCount, seed, mode) {
       let html = '<div class="stats-block"><div class="stats-title">' + title + '</div><div class="stats-scroll"><table class="stats-heatmap"><tr><th></th>';
       for (let c = 0; c < colCount; c++) html += '<th>' + c + '</th>';
       html += '<th class="avg-col">avg</th></tr>';
@@ -503,27 +532,28 @@
         html += '<tr><th>' + r + '</th>';
         let rowSum = 0;
         for (let c = 0; c < colCount; c++) {
-          const v = ((seed + r * 17 + c * 31) % 97) / 97;
-          const disp = (v * 2.8).toFixed(2);
-          rowSum += parseFloat(disp);
-          html += '<td style="background:' + heatColor(v) + '">' + disp + '</td>';
+          const cell = statsCell(seed, r, c, mode || 'schedule');
+          rowSum += parseFloat(cell.disp);
+          html += '<td class="' + cell.cls + '" style="background:' + heatColor(cell.norm) + '">' + cell.disp + '</td>';
         }
-        const rowAvg = (rowSum / colCount).toFixed(2);
+        const rowAvg = (rowSum / colCount).toFixed(mode === 'prb' ? 0 : 2);
         rowAvgs.push(parseFloat(rowAvg));
         html += '<td class="avg-col">' + rowAvg + '</td></tr>';
       }
       html += '<tr class="avg-row"><th>avg</th>';
       for (let c = 0; c < colCount; c++) {
         let colSum = 0;
-        for (let r = 0; r < rowCount; r++) {
-          const v = ((seed + r * 17 + c * 31) % 97) / 97;
-          colSum += v * 2.8;
-        }
-        html += '<td>' + (colSum / rowCount).toFixed(2) + '</td>';
+        for (let r = 0; r < rowCount; r++) colSum += parseFloat(statsCell(seed, r, c, mode || 'schedule').disp);
+        html += '<td>' + (colSum / rowCount).toFixed(mode === 'prb' ? 0 : 2) + '</td>';
       }
-      const grand = (rowAvgs.reduce((a,b)=>a+b,0) / rowAvgs.length).toFixed(2);
+      const grand = (rowAvgs.reduce((a, b) => a + b, 0) / rowAvgs.length).toFixed(mode === 'prb' ? 0 : 2);
       html += '<td class="avg-col">' + grand + '</td></tr></table></div></div>';
       return html;
+    }
+
+    function statsRangeBar() {
+      return '<div class="range-bar"><div class="range-bar-fill"></div>' +
+        '<div class="range-bar-tick" style="left:12%"></div><div class="range-bar-tick" style="left:44%"></div><div class="range-bar-tick" style="left:58%"></div></div>';
     }
 
     function statisticsView() {
@@ -532,8 +562,9 @@
         '<button class="p-btn p-btn-outlined">Expand All</button><button class="p-btn p-btn-outlined">Collapse All</button><button class="p-btn p-btn-outlined">Save Page</button></div>' +
         '<div class="selected-range"><b>Selected Range:</b><div class="range-times">' +
         '<span>2026-07-29 20:13:33</span><span>2026-07-29 20:16:05</span><span>2026-07-29 20:16:17</span></div></div>' +
-        statsHeatmapTable('Average Schedule Count Table', 32, 10, 42) +
-        statsHeatmapTable('Average CSI-RS Schedule Count Table', 32, 10, 87);
+        statsRangeBar() +
+        statsHeatmapTable('Average Schedule Count Table', 32, 10, 42, 'schedule') +
+        statsHeatmapTable('Average Used PRBs Table', 32, 10, 173, 'prb');
     }
 
     function scheduleTableView() {
@@ -581,7 +612,7 @@
     function l2psPanel() {
       const tabs = L2PS_TABS.map(t => '<li class="tab-list-item' + (t==='DL'?' tab-list-active':'') + '" data-l2ps="' + t + '">' + t + '</li>').join('');
       const dlSubViews = { Cell: dlCellView(), Statistics: statisticsView() };
-      const dlBody = l2psSubTabPanel('Cell', dlSubViews);
+      const dlBody = l2psSubTabPanel('Statistics', dlSubViews);
       const schedulingBody = scheduleTableView();
       const bodies = {
         DL: dlBody,

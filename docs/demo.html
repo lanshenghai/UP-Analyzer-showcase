@@ -16,6 +16,8 @@
       overflow: hidden;
     }
     body { margin: 8px; display: flex; flex-direction: column; }
+    #app-tabs { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    #app-panels { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 
     .demo-strip {
       background: #FEEFB3; color: #9F6000; font-size: 11px; text-align: center;
@@ -65,21 +67,17 @@
       border: 1px solid #2196F3; border-top: none; padding: 5px; flex: 1;
       overflow: auto; position: relative; min-height: 0; background: #fff;
     }
-    .tab-panel { display: none; height: 100%; flex-direction: column; min-height: 0; }
+    .tab-panel { display: none; height: 100%; flex-direction: column; min-height: 0; flex: 1; }
     .tab-panel.active { display: flex; }
-    #panel-5g { position: relative; min-height: 0; }
-    #panel-5g .spinner-mask { position: absolute; }
-    #g5-tabs { min-height: 0; }
-    #g5-tab-list { position: relative; z-index: 5; background: #fff; }
-    #g5-tabs > .tab-content { position: relative; flex: 1; min-height: 0; }
-    #g5-tabs > .tab-content > .g5-panel {
-      position: absolute; inset: 0; overflow: auto;
-      display: none; flex-direction: column; min-height: 0;
-    }
-    #g5-tabs > .tab-content > .g5-panel.active { display: flex; }
-    .view-panel { display: none; height: 100%; flex-direction: column; min-height: 0; }
+    #panel-5g { position: relative; min-height: 0; flex: 1; display: flex; flex-direction: column; }
+    #panel-5g .spinner-mask { position: absolute; inset: 0; z-index: 50; }
+    #g5-tabs { min-height: 0; flex: 1; display: flex; flex-direction: column; }
+    #g5-tab-list { position: relative; z-index: 5; background: #fff; flex-shrink: 0; }
+    #g5-tabs > .tab-content { position: relative; flex: 1; min-height: 0; overflow: auto; }
+    .view-panel { display: none; flex-direction: column; min-height: 0; }
     .view-panel.active { display: flex; }
-    #g5-l2ps .inner-tab-list > .tab-list { position: relative; z-index: 4; background: #fff; }
+    .g5-panel { width: 100%; }
+    #g5-l2ps .inner-tab-list > .tab-list { position: relative; z-index: 4; background: #fff; flex-shrink: 0; }
 
     .open-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
     .open-file {

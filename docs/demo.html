@@ -65,10 +65,21 @@
       border: 1px solid #2196F3; border-top: none; padding: 5px; flex: 1;
       overflow: auto; position: relative; min-height: 0; background: #fff;
     }
-    .tab-panel { display: none; height: 100%; flex-direction: column; }
+    .tab-panel { display: none; height: 100%; flex-direction: column; min-height: 0; }
     .tab-panel.active { display: flex; }
-    .view-panel { display: none; height: 100%; flex-direction: column; }
+    #panel-5g { position: relative; min-height: 0; }
+    #panel-5g .spinner-mask { position: absolute; }
+    #g5-tabs { min-height: 0; }
+    #g5-tab-list { position: relative; z-index: 5; background: #fff; }
+    #g5-tabs > .tab-content { position: relative; flex: 1; min-height: 0; }
+    #g5-tabs > .tab-content > .g5-panel {
+      position: absolute; inset: 0; overflow: auto;
+      display: none; flex-direction: column; min-height: 0;
+    }
+    #g5-tabs > .tab-content > .g5-panel.active { display: flex; }
+    .view-panel { display: none; height: 100%; flex-direction: column; min-height: 0; }
     .view-panel.active { display: flex; }
+    #g5-l2ps .inner-tab-list > .tab-list { position: relative; z-index: 4; background: #fff; }
 
     .open-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
     .open-file {
@@ -396,7 +407,7 @@
         case 'Pdcch Calc': return '<div class="mono">lcrId 111 · search_space: dedicated(1) · UE-Specific(8)<br>CCE candidates: PRB 12–15, 16–19 …</div>';
         case 'RF': return '<div class="isa_info" style="margin:0 0 6px">RF|Syslog · bfcali calibration decode</div>' + denseTable(['RMOD','chain','subband','amplitude'], [['RMOD_L-1','RX_1','3','0.82'],['RMOD_L-1','RX_2','3','0.79']], [true, true]);
         case 'L1 HB': return sparkline([20,35,42,38,45,52,48,40,35,30,38,44,50,46]) + '<p style="font-size:11px;color:#888;margin-top:6px">SRS History Buffer SNR</p>';
-        case 'L2': return '<div class="mono">L2Rt TimeMarker · L2Hb Trace · L2Ps Trace · L2Lo · L2HiDu · L2HiCu</div>';
+        case 'L2': return '<div class="mono">L2Rt TimeMarker · L2Hb Trace · <a href="#" class="jump-l2ps">L2Ps Trace</a> · L2Lo · L2HiDu · L2HiCu</div>';
         case 'Syslogs': return '<div class="mono">[Current] L2_PS scheduler init OK<br>[Before Reset] RF calibration completed<br>[KnownIssues] —</div>';
         case 'TRS': return denseTable(['TRS param','value'], [['trsPeriodicity','20ms'],['trsResource','slot 4']], [false, false]);
         case 'KPI': return denseTable(['Counter','NRCELL-111','NRCELL-112'], [['COUNTER_AVAIL_CH','568,425,464','412,003,221'],['COUNTER_USED_CH','498,221,100','380,112,004']], [false, false]);
@@ -767,33 +778,44 @@
       wireLogTabs();
       document.body.addEventListener('click', e => {
         if (e.target.dataset.action === 'load') simulateLoad();
+        if (e.target.classList.contains('jump-l2ps')) {
+          e.preventDefault();
+          switchG5Tab('l2ps');
+        }
       });
     }
 
     function wireSubTabs(listSel, prefix, onSwitch) {
       const list = document.querySelector(listSel);
       if (!list) return;
-      list.querySelectorAll('.tab-list-item').forEach(tab => {
-        tab.addEventListener('click', () => {
-          list.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
-          tab.classList.add('tab-list-active');
-          const key = tab.dataset[prefix];
-          document.querySelectorAll('.' + prefix + '-panel, #' + prefix + '-' + key).forEach(() => {});
-          document.querySelectorAll('[id^="'+prefix+'-"]').forEach(p => {
-            if (!p.id.startsWith(prefix + '-')) return;
-            const show = p.id === prefix + '-' + key;
+      const root = list.closest('.tabs') || list.parentElement;
+      root.addEventListener('click', e => {
+        const tab = e.target.closest('.tab-list-item');
+        if (!tab || !list.contains(tab)) return;
+        list.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+        tab.classList.add('tab-list-active');
+        const key = tab.getAttribute('data-' + prefix);
+        if (!key) return;
+        document.querySelectorAll('[id^="' + prefix + '-"]').forEach(p => {
+          if (!p.id.startsWith(prefix + '-')) return;
+          const show = p.id === prefix + '-' + key;
+          p.style.display = show ? 'flex' : 'none';
+          p.classList.toggle('active', show);
+        });
+        if (prefix === 'g5') {
+          document.querySelectorAll('.g5-panel').forEach(p => {
+            const show = p.id === 'g5-' + key;
             p.style.display = show ? 'flex' : 'none';
             p.classList.toggle('active', show);
           });
-          if (prefix === 'g5') {
-            document.querySelectorAll('.g5-panel').forEach(p => {
-              const show = p.id === 'g5-' + key;
-              p.style.display = show ? 'flex' : 'none';
-            });
-          }
-          if (onSwitch) onSwitch(key);
-        });
+        }
+        if (onSwitch) onSwitch(key);
       });
+    }
+
+    function switchG5Tab(key) {
+      const tab = document.querySelector('#g5-tab-list [data-g5="' + key + '"]');
+      if (tab) tab.click();
     }
 
     function wireAppTabs() {
@@ -826,26 +848,34 @@
     }
 
     function wireL2psTabs() {
-      document.querySelectorAll('[data-l2ps]').forEach(tab => {
-        tab.addEventListener('click', () => {
-          const root = tab.closest('.inner-tab-list') || tab.closest('.tabs');
-          const list = tab.closest('.tab-list');
+      const panel = document.getElementById('g5-l2ps');
+      if (!panel) return;
+      panel.addEventListener('click', e => {
+        const mainTab = e.target.closest('[data-l2ps]');
+        if (mainTab && mainTab.closest('#g5-l2ps > .inner-tab-list > .tab-list')) {
+          e.stopPropagation();
+          const list = mainTab.parentElement;
           list.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
-          tab.classList.add('tab-list-active');
-          const k = tab.dataset.l2ps;
-          const panel = document.getElementById('g5-l2ps') || document.querySelector('[data-view="l2ps"]');
-          if (panel) panel.querySelectorAll('.l2ps-body').forEach(b => b.style.display = b.dataset.l2psBody === k ? 'block' : 'none');
-        });
-      });
-      document.querySelectorAll('[data-l2ps-sub]').forEach(tab => {
-        tab.addEventListener('click', () => {
-          const list = tab.closest('.tab-list');
-          const container = tab.closest('.l2ps-sub-tabs');
+          mainTab.classList.add('tab-list-active');
+          const k = mainTab.getAttribute('data-l2ps');
+          panel.querySelectorAll('.l2ps-body').forEach(b => {
+            b.style.display = b.getAttribute('data-l2ps-body') === k ? 'block' : 'none';
+          });
+          return;
+        }
+        const subTab = e.target.closest('[data-l2ps-sub]');
+        if (subTab && subTab.closest('.l2ps-sub-tabs')) {
+          e.stopPropagation();
+          const container = subTab.closest('.l2ps-sub-tabs');
+          const list = subTab.closest('.tab-list');
+          if (!list || !container) return;
           list.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
-          tab.classList.add('tab-list-active');
-          const k = tab.dataset.l2psSub;
-          container.querySelectorAll('.l2ps-sub-body').forEach(b => b.style.display = b.dataset.l2psSubBody === k ? 'block' : 'none');
-        });
+          subTab.classList.add('tab-list-active');
+          const k = subTab.getAttribute('data-l2ps-sub');
+          container.querySelectorAll('.l2ps-sub-body').forEach(b => {
+            b.style.display = b.getAttribute('data-l2ps-sub-body') === k ? 'block' : 'none';
+          });
+        }
       });
     }
 

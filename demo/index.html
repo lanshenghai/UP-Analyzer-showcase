@@ -3,482 +3,667 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UP-Analyzer — Interactive Demo (Synthetic Data)</title>
+  <title>UP-Analyzer</title>
+  <link rel="icon" href="../assets/icon.png">
   <style>
-    :root {
-      --bg: #0f1419;
-      --surface: #1a2332;
-      --surface2: #243044;
-      --border: #2d3a4f;
-      --text: #e6edf3;
-      --muted: #8b9cb3;
-      --accent: #3b82f6;
-      --accent2: #22c55e;
-      --warn: #f59e0b;
-      --danger: #ef4444;
-      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
-      --mono: "Cascadia Code", "Consolas", monospace;
-    }
+    /* Matched to UP-Analyzer src/tabs/styles.css + src/index.css */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-    .titlebar {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 8px 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 13px;
-    }
-    .titlebar .dots { display: flex; gap: 6px; }
-    .titlebar .dot { width: 12px; height: 12px; border-radius: 50%; }
-    .dot-r { background: #ff5f57; }
-    .dot-y { background: #febc2e; }
-    .dot-g { background: #28c840; }
-    .titlebar .title { color: var(--muted); flex: 1; text-align: center; }
-    .badge {
-      background: var(--accent);
-      color: white;
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 600;
-    }
-    .layout {
-      display: grid;
-      grid-template-columns: 220px 1fr 320px;
-      height: calc(100vh - 41px);
-    }
-    .sidebar {
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      padding: 12px 0;
-      overflow-y: auto;
-    }
-    .sidebar h3 {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 8px 16px;
-      letter-spacing: 0.05em;
-    }
-    .nav-item {
-      padding: 8px 16px;
-      font-size: 13px;
-      cursor: pointer;
-      border-left: 3px solid transparent;
-      transition: all 0.15s;
-    }
-    .nav-item:hover { background: var(--surface2); }
-    .nav-item.active {
-      background: var(--surface2);
-      border-left-color: var(--accent);
-      color: var(--accent);
-    }
-    .tree { padding: 4px 0 4px 8px; font-size: 12px; }
-    .tree-item {
-      padding: 4px 8px 4px 20px;
-      cursor: pointer;
-      color: var(--muted);
-      position: relative;
-    }
-    .tree-item::before { content: "▸ "; color: var(--border); }
-    .tree-item.open::before { content: "▾ "; }
-    .tree-item.leaf::before { content: "· "; }
-    .tree-item:hover { color: var(--text); }
-    .tree-item.selected { color: var(--accent2); }
-    .main {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .tabs {
-      display: flex;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 8px;
-    }
-    .tab {
-      padding: 10px 16px;
-      font-size: 13px;
-      cursor: pointer;
-      color: var(--muted);
-      border-bottom: 2px solid transparent;
-    }
-    .tab.active { color: var(--text); border-bottom-color: var(--accent); }
-    .content {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .panel { display: none; }
-    .panel.active { display: block; }
-    .dropzone {
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      padding: 48px;
-      text-align: center;
-      margin-bottom: 20px;
-      transition: all 0.2s;
-      cursor: pointer;
-    }
-    .dropzone:hover, .dropzone.loaded {
-      border-color: var(--accent);
-      background: rgba(59, 130, 246, 0.05);
-    }
-    .dropzone .icon { font-size: 48px; margin-bottom: 12px; }
-    .dropzone h2 { font-size: 18px; margin-bottom: 8px; }
-    .dropzone p { color: var(--muted); font-size: 13px; }
-    .progress {
-      height: 4px;
-      background: var(--surface2);
-      border-radius: 2px;
-      margin: 16px 0;
-      overflow: hidden;
-      display: none;
-    }
-    .progress.show { display: block; }
-    .progress-bar {
+    html, body {
       height: 100%;
-      background: var(--accent);
-      width: 0%;
-      transition: width 0.3s;
-    }
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .metric {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px;
-    }
-    .metric .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-    .metric .value { font-size: 24px; font-weight: 700; }
-    .metric .delta { font-size: 12px; margin-top: 4px; }
-    .delta.down { color: var(--danger); }
-    .delta.up { color: var(--accent2); }
-    .chart-container {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
-    .bar-chart { display: flex; align-items: flex-end; gap: 24px; height: 200px; padding: 0 20px; }
-    .bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; }
-    .bars { display: flex; gap: 6px; align-items: flex-end; height: 160px; }
-    .bar {
-      width: 32px;
-      border-radius: 4px 4px 0 0;
-      transition: height 0.6s ease;
-    }
-    .bar.ok { background: var(--accent2); }
-    .bar.nok { background: var(--danger); }
-    .bar-label { font-size: 11px; color: var(--muted); margin-top: 8px; text-align: center; }
-    .legend { display: flex; gap: 16px; margin-top: 12px; font-size: 12px; }
-    .legend span::before {
-      content: "";
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 2px;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-    .legend .ok::before { background: var(--accent2); }
-    .legend .nok::before { background: var(--danger); }
-    .right-panel {
-      background: var(--surface);
-      border-left: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #fff;
+      color: #333;
+      font-size: 14px;
       overflow: hidden;
     }
-    .right-panel .header {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .chat {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-      font-size: 12px;
-    }
-    .msg {
-      margin-bottom: 12px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      line-height: 1.5;
-    }
-    .msg.user { background: var(--surface2); margin-left: 20px; }
-    .msg.agent { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); }
-    .msg .cmd {
-      font-family: var(--mono);
-      background: var(--bg);
-      padding: 2px 6px;
-      border-radius: 4px;
+    body { margin: 8px; display: flex; flex-direction: column; }
+
+    .demo-strip {
+      background: #FEEFB3;
+      color: #9F6000;
       font-size: 11px;
+      text-align: center;
+      padding: 3px;
+      margin: -8px -8px 4px;
+      border-bottom: 1px solid #e6c200;
     }
-    .stage-list { padding: 12px; }
-    .stage {
+
+    .app-header {
+      position: relative;
+      min-height: 28px;
+      margin-bottom: 3px;
+    }
+    .version {
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 8px 0;
-      font-size: 12px;
-      border-bottom: 1px solid var(--border);
+      gap: 8px;
+      font-size: inherit;
+      z-index: 1;
     }
-    .stage-dot {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
+    .version label { font-size: inherit; }
+    .whats-new {
+      font-size: 12px;
+      color: #124191;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .top-right {
+      position: absolute;
+      right: 10px;
+      top: 0;
       display: flex;
+      align-items: center;
+      gap: 2px;
+      transform: translateY(-4px);
+      z-index: 2;
+    }
+    .search-box {
+      border: 1px solid #ced4da;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-size: 12px;
+      width: 120px;
+      height: 22px;
+    }
+    .p-btn {
+      box-sizing: border-box;
+      min-height: 22px;
+      height: 22px;
+      padding: 0 0.45rem;
+      font-size: 12px;
+      border: 1px solid #3B82F6;
+      background: #3B82F6;
+      color: #fff;
+      border-radius: 3px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+    }
+    .p-btn:hover { background: #2563eb; }
+    .p-btn-outlined {
+      background: #fff;
+      color: #3B82F6;
+    }
+    .p-btn-outlined:hover { background: #eff6ff; }
+
+    /* tabs/styles.css */
+    .tabs { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .tab-list {
+      border-bottom: 1px solid #2196F3;
+      padding-left: 0;
+      margin: 3px 0 0;
+      list-style: none;
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+    .tab-list-item {
+      display: inline-block;
+      margin: 2px 0 -1px 3px;
+      border: 1px solid #2196F3;
+      padding: 3px 0.5em;
+      background: #DDE;
+      cursor: pointer;
+      font: bold 12px Verdana, sans-serif;
+      color: #448;
+      height: 23px;
+      user-select: none;
+    }
+    .tab-list-item:hover:not(.tab-list-active) {
+      color: #118df3;
+      background: #AAE;
+      border-color: #227;
+    }
+    .tab-list-item.tab-list-active {
+      background: white;
+      border-bottom: 1px solid white;
+    }
+    .tab-content {
+      border: 1px solid #2196F3;
+      border-top: none;
+      padding: 5px;
+      flex: 1;
+      overflow: auto;
+      position: relative;
+      min-height: 0;
+      background: #fff;
+    }
+    .tab-panel { display: none; height: 100%; }
+    .tab-panel.active { display: flex; flex-direction: column; }
+
+    /* ParentComp / SelectFiles */
+    .open-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+    .open-file {
+      font-size: 14px;
+      font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+      color: #0000ee;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .open-file:hover { color: #124191; }
+
+    .files-block {
+      position: relative;
+      margin-bottom: 6px;
+    }
+    .show-files {
+      font: normal 12px "Courier New", Courier, Monospace;
+      line-height: 1.4em;
+      word-break: break-all;
+    }
+    .colored-filename {
+      cursor: pointer;
+      padding: 0 2px;
+    }
+    .colored-filename:hover { text-decoration: underline; }
+
+    .tags {
+      display: flex;
+      position: absolute;
+      right: 10px;
+      top: 0;
+      gap: 5px;
+    }
+    .tag-string {
+      color: #fff;
+      background-color: #21d4f3;
+      border-radius: 3px;
+      padding: 0 4px;
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    /* fieldset / item */
+    .item {
+      box-shadow: 2px 2px 1px #a6a6a6;
+      border: 1px solid #e6e6e6;
+      margin: 5px;
+      background: white;
+      flex: 1;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+    }
+    .handler {
+      height: 8px;
+      cursor: move;
+      background-color: #d8ecf3;
+    }
+    .fieldset {
+      border: 1px solid rgba(0, 242, 255, 0.3);
+      margin: 4px;
+      padding: 4px;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      font-size: smaller;
+      flex: 1;
+    }
+    .fieldset-legend {
+      padding: 2px 8px;
+      font-weight: bold;
+      font-size: 12px;
+      color: #333;
+    }
+    .fieldset-body { padding: 8px; }
+
+    /* Cell mapping table mock */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-family: Verdana, sans-serif;
+    }
+    .data-table th, .data-table td {
+      border: 1px solid #ccc;
+      padding: 4px 8px;
+      text-align: left;
+    }
+    .data-table th { background: #f4f4f4; }
+
+    /* KPI chart area */
+    .chart-area {
+      padding: 12px;
+      font-family: Verdana, sans-serif;
+    }
+    .chart-title { font-weight: bold; font-size: 13px; margin-bottom: 12px; }
+    .bar-row { display: flex; align-items: flex-end; gap: 32px; height: 180px; padding: 0 20px; }
+    .bar-group { text-align: center; }
+    .bars { display: flex; gap: 4px; align-items: flex-end; height: 140px; }
+    .bar { width: 28px; border-radius: 2px 2px 0 0; transition: height 0.5s; }
+    .bar.ok { background: #4CAF50; }
+    .bar.nok { background: #f44336; }
+    .bar-label { font-size: 11px; margin-top: 6px; color: #555; }
+
+    /* Comparing */
+    .compare-btns { margin-bottom: 10px; }
+    .compare-btns .p-btn-outlined.loaded { background: lightgreen; }
+
+    /* IDE overlay — separate window style */
+    .ide-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 100;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      flex-shrink: 0;
     }
-    .stage-dot.done { background: var(--accent2); color: #000; }
-    .stage-dot.active { background: var(--accent); color: #fff; animation: pulse 1.5s infinite; }
-    .stage-dot.pending { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
-    .demo-banner {
-      background: linear-gradient(90deg, #1e3a5f, #1a2332);
-      border-bottom: 1px solid var(--border);
-      padding: 6px 16px;
-      font-size: 11px;
-      color: var(--warn);
-      text-align: center;
-    }
-    .timeline {
+    .ide-overlay.show { display: flex; }
+    .ide-window {
+      width: 92%;
+      max-width: 1100px;
+      height: 80%;
+      background: #1e1e1e;
+      border-radius: 6px;
+      overflow: hidden;
       display: flex;
-      gap: 2px;
-      height: 40px;
-      margin-top: 12px;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     }
-    .timeline-block {
+    .ide-titlebar {
+      background: #323233;
+      color: #ccc;
+      padding: 6px 12px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ide-body { display: flex; flex: 1; overflow: hidden; }
+    .ide-sidebar {
+      width: 48px;
+      background: #252526;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 8px;
+      gap: 12px;
+      font-size: 20px;
+    }
+    .ide-main { flex: 1; display: flex; flex-direction: column; }
+    .ide-tabs {
+      background: #2d2d2d;
+      display: flex;
+      padding: 0 8px;
+      font-size: 12px;
+      color: #969696;
+    }
+    .ide-tab {
+      padding: 8px 16px;
+      border-top: 2px solid transparent;
+    }
+    .ide-tab.active {
+      color: #fff;
+      background: #1e1e1e;
+      border-top-color: #007acc;
+    }
+    .ide-chat {
       flex: 1;
-      border-radius: 2px;
-      opacity: 0.8;
+      padding: 12px;
+      overflow-y: auto;
+      font-family: Consolas, monospace;
+      font-size: 12px;
+      color: #d4d4d4;
     }
-    code { font-family: var(--mono); font-size: 11px; color: var(--accent2); }
+    .ide-msg { margin-bottom: 12px; line-height: 1.5; }
+    .ide-msg.user { color: #9cdcfe; }
+    .ide-msg.agent { color: #ce9178; }
+    .ide-msg code { color: #b5cea8; background: #2d2d2d; padding: 1px 4px; }
+    .ide-close {
+      background: none;
+      border: none;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .isa_info {
+      margin: 6px 0;
+      padding: 8px 12px;
+      border-radius: 0.5em;
+      box-shadow: 1px 1px 3px #888;
+      color: #00529B;
+      background-color: #BDE5F8;
+      font-size: 12px;
+    }
+
+    .spinner-mask {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.7);
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      font: bold 13px Verdana, sans-serif;
+      color: #2196F3;
+    }
+    .spinner-mask.show { display: flex; }
   </style>
 </head>
 <body>
-  <div class="demo-banner">
-    ⚠️ SYNTHETIC DEMO — All data is fictional. For portfolio showcase only. No proprietary content.
-  </div>
-  <div class="titlebar">
-    <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
-    <div class="title">UP-Analyzer v12.1 — Engineering Log Intelligence Platform</div>
-    <span class="badge">DEMO</span>
+  <div class="demo-strip">
+    ⚠️ 脱敏演示页 — 界面样式对齐真实 UP-Analyzer，数据均为虚构。按 Esc 关闭 IDE 演示窗。
   </div>
 
-  <div class="layout">
-    <div class="sidebar">
-      <h3>Modules</h3>
-      <div class="nav-item active" data-tab="snapshot">📁 Snapshot</div>
-      <div class="nav-item" data-tab="kpi">📊 KPI Dashboard</div>
-      <div class="nav-item" data-tab="trace">📈 Trace View</div>
-      <div class="nav-item" data-tab="investigate">🔍 AI Investigation</div>
-      <h3 style="margin-top:16px">Parsed Tree</h3>
-      <div class="tree" id="tree">
-        <div class="tree-item open">SITE-001_Snapshot</div>
-        <div class="tree-item leaf selected" style="padding-left:36px">L2_ProtocolStack</div>
-        <div class="tree-item leaf" style="padding-left:36px">L3_ControlPlane</div>
-        <div class="tree-item leaf" style="padding-left:36px">Syslog</div>
-        <div class="tree-item leaf" style="padding-left:36px">Build Info</div>
-      </div>
+  <div class="app-header">
+    <div class="version">
+      <label>v12.1.1</label>
+      <span class="whats-new">What's New</span>
     </div>
+    <div class="top-right">
+      <input class="search-box" placeholder="Search..." readonly>
+      <button class="p-btn">LogBrowser</button>
+      <button class="p-btn">TtiTraceHelper</button>
+      <button class="p-btn">Help</button>
+      <button class="p-btn p-btn-outlined" onclick="showIdeDemo()" title="演示 IDE 插件（独立窗口）">IDE Demo</button>
+    </div>
+  </div>
 
-    <div class="main">
-      <div class="tabs">
-        <div class="tab active" data-panel="snapshot">Snapshot</div>
-        <div class="tab" data-panel="kpi">KPI Compare</div>
-        <div class="tab" data-panel="trace">TTI Trace</div>
-        <div class="tab" data-panel="investigate">Investigation</div>
-      </div>
-      <div class="content">
-        <!-- Snapshot Panel -->
-        <div class="panel active" id="panel-snapshot">
-          <div class="dropzone" id="dropzone" onclick="loadSnapshot()">
-            <div class="icon">📂</div>
-            <h2>Drop Snapshot Folder Here</h2>
-            <p>Synthetic: <code>SITE-001_R3.2.1_BLD_000004</code></p>
-            <p style="margin-top:8px">Click to simulate load → auto-discover 4 components</p>
-          </div>
-          <div class="progress" id="progress"><div class="progress-bar" id="progressBar"></div></div>
-          <div class="metrics" id="metrics" style="display:none">
-            <div class="metric"><div class="label">Components</div><div class="value">4</div></div>
-            <div class="metric"><div class="label">Parsers Run</div><div class="value">127</div></div>
-            <div class="metric"><div class="label">Modules</div><div class="value">38</div></div>
-            <div class="metric"><div class="label">Parse Time</div><div class="value">12s</div></div>
-          </div>
-        </div>
+  <!-- App-level tabs: App.js -->
+  <div class="tabs" id="app-tabs">
+    <ol class="tab-list" id="app-tab-list">
+      <li class="tab-list-item" data-app="lte">LTE</li>
+      <li class="tab-list-item tab-list-active" data-app="5g">5G</li>
+      <li class="tab-list-item" data-app="rf">RF</li>
+      <li class="tab-list-item" data-app="ecpri">eCPRI</li>
+      <li class="tab-list-item" data-app="crm">CRM</li>
+      <li class="tab-list-item" data-app="airphone">AirPhone</li>
+      <li class="tab-list-item" data-app="msi">MSI</li>
+      <li class="tab-list-item" data-app="tools">🔧 Troubleshooting</li>
+    </ol>
 
-        <!-- KPI Panel -->
-        <div class="panel" id="panel-kpi">
-          <div class="chart-container">
-            <div class="chart-title">OK vs NOK — Counter Comparison (CELL-111)</div>
-            <div class="bar-chart" id="barChart">
-              <div class="bar-group">
-                <div class="bars">
-                  <div class="bar ok" style="height:0" data-h="140"></div>
-                  <div class="bar nok" style="height:0" data-h="132"></div>
-                </div>
-                <div class="bar-label">COUNTER_AVAIL_CH<br><span style="color:var(--danger)">−5.9%</span></div>
+    <div class="tab-content">
+      <!-- ========== 5G panel ========== -->
+      <div class="tab-panel active" id="panel-5g">
+        <!-- G5.js sub-tabs -->
+        <div class="tabs" id="g5-tabs">
+          <ol class="tab-list" id="g5-tab-list">
+            <li class="tab-list-item" data-g5="l1hb">L1 HB Analyzer</li>
+            <li class="tab-list-item" data-g5="syslog">Syslog Analyzer</li>
+            <li class="tab-list-item" data-g5="l2ps">L2Ps Trace Analyzer</li>
+            <li class="tab-list-item" data-g5="l2lo">L2Lo Trace Analyzer</li>
+            <li class="tab-list-item" data-g5="l2hidu">L2HiDu Trace Analyzer</li>
+            <li class="tab-list-item" data-g5="l2hicu">L2HiCu Trace Analyzer</li>
+            <li class="tab-list-item" data-g5="bip">Bip log Analyzer</li>
+            <li class="tab-list-item" data-g5="timemarker">L2Rt TimeMarker</li>
+            <li class="tab-list-item" data-g5="kpi">KPI Analyzer</li>
+            <li class="tab-list-item tab-list-active" data-g5="snapshot">Snapshot</li>
+            <li class="tab-list-item" data-g5="longterm">LongtermKPI</li>
+            <li class="tab-list-item" data-g5="comparing">Comparing</li>
+          </ol>
+
+          <div class="tab-content" style="position:relative">
+            <div class="spinner-mask" id="spinner"><span>Parsing…</span></div>
+
+            <!-- Snapshot view -->
+            <div class="g5-panel active" id="g5-snapshot">
+              <div class="open-row">
+                <span class="open-file" onclick="simulateLoad()">Open Files</span>
+                <span style="color:#888">|</span>
+                <span class="open-file" onclick="simulateLoad()">Open Folder</span>
               </div>
-              <div class="bar-group">
-                <div class="bars">
-                  <div class="bar ok" style="height:0" data-h="100"></div>
-                  <div class="bar nok" style="height:0" data-h="102"></div>
+              <div class="files-block" id="files-block" style="display:none">
+                <div class="tags">
+                  <span class="tag-string" id="tag-version">SwVersion: R3.2.1_BLD_000004</span>
+                  <span class="tag-string">SnapshotTime: 2026-03-04 12:00:00</span>
                 </div>
-                <div class="bar-label">COUNTER_USED_CH<br><span style="color:var(--accent2)">+1.8%</span></div>
+                <div class="show-files" id="file-list"></div>
               </div>
-              <div class="bar-group">
-                <div class="bars">
-                  <div class="bar ok" style="height:0" data-h="95"></div>
-                  <div class="bar nok" style="height:0" data-h="95"></div>
+
+              <!-- Inner Snapshot tabs -->
+              <div class="tabs" style="margin-top:8px;flex:1" id="snap-tabs">
+                <ol class="tab-list">
+                  <li class="tab-list-item tab-list-active" data-snap="cell">CellMapping</li>
+                  <li class="tab-list-item" data-snap="syslog">Syslog</li>
+                  <li class="tab-list-item" data-snap="kpi">KPI</li>
+                  <li class="tab-list-item" data-snap="l2ps">L2Ps Trace</li>
+                  <li class="tab-list-item" data-snap="build">Build Info</li>
+                </ol>
+                <div class="tab-content">
+                  <div class="item">
+                    <div class="handler"></div>
+                    <div class="fieldset">
+                      <div class="fieldset-legend">Cell Mapping</div>
+                      <div class="fieldset-body">
+                        <table class="data-table">
+                          <tr><th>Cell ID</th><th>lcrId</th><th>Band</th><th>PCI</th><th>Status</th></tr>
+                          <tr><td>NRCELL-111</td><td>111</td><td>n78</td><td>111</td><td>Active</td></tr>
+                          <tr><td>NRCELL-112</td><td>112</td><td>n78</td><td>112</td><td>Active</td></tr>
+                          <tr><td>NRCELL-113</td><td>113</td><td>n78</td><td>113</td><td>Inactive</td></tr>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="bar-label">COUNTER_SLOT_CH<br><span style="color:var(--muted)">−0.05%</span></div>
               </div>
             </div>
-            <div class="legend"><span class="ok">OK (BLD_000006)</span><span class="nok">NOK (BLD_000004)</span></div>
-          </div>
-        </div>
 
-        <!-- Trace Panel -->
-        <div class="panel" id="panel-trace">
-          <div class="chart-container">
-            <div class="chart-title">TTI Timeline — Scheduler Events (synthetic)</div>
-            <div class="timeline" id="timeline"></div>
-            <p style="font-size:12px;color:var(--muted);margin-top:12px">
-              2,847 events decoded · 156ms span · Multi-UE scheduling visualization
-            </p>
-          </div>
-        </div>
-
-        <!-- Investigation Panel -->
-        <div class="panel" id="panel-investigate">
-          <div class="chart-container">
-            <div class="chart-title">Staged Investigation — ISSUE-001</div>
-            <div class="stage-list" id="stages">
-              <div class="stage"><div class="stage-dot done">A</div><div><strong>Working Set</strong><br><span style="color:var(--muted)">4 counters pinned</span></div></div>
-              <div class="stage"><div class="stage-dot done">B</div><div><strong>Quantify</strong><br><span style="color:var(--muted)">−5.94% confirmed, load comparable</span></div></div>
-              <div class="stage"><div class="stage-dot done">C</div><div><strong>Call-Site</strong><br><span style="color:var(--muted)">primarySuspect: COUNTER_AVAIL_CH</span></div></div>
-              <div class="stage"><div class="stage-dot done">D</div><div><strong>Mechanism</strong><br><span style="color:var(--muted)">invocation gap · behavior-control</span></div></div>
-              <div class="stage"><div class="stage-dot active">E</div><div><strong>Adversarial Review</strong><br><span style="color:var(--accent2)">Verdict: HOLDS ✓</span></div></div>
+            <!-- KPI Analyzer view -->
+            <div class="g5-panel" id="g5-kpi" style="display:none">
+              <div class="open-row">
+                <span class="open-file">Open Files</span>
+                <span style="color:#888">|</span>
+                <span class="open-file">Open Folder</span>
+              </div>
+              <div class="isa_info">Loaded: synthetic KPI report — OK vs NOK comparison</div>
+              <div class="chart-area">
+                <div class="chart-title">PM Counter Comparison — NRCELL-111</div>
+                <div class="bar-row" id="kpi-bars">
+                  <div class="bar-group">
+                    <div class="bars">
+                      <div class="bar ok" style="height:0" data-h="120"></div>
+                      <div class="bar nok" style="height:0" data-h="113"></div>
+                    </div>
+                    <div class="bar-label">COUNTER_AVAIL_CH<br><span style="color:#f44336">−5.9%</span></div>
+                  </div>
+                  <div class="bar-group">
+                    <div class="bars">
+                      <div class="bar ok" style="height:0" data-h="90"></div>
+                      <div class="bar nok" style="height:0" data-h="92"></div>
+                    </div>
+                    <div class="bar-label">COUNTER_USED_CH<br><span style="color:#4CAF50">+1.8%</span></div>
+                  </div>
+                  <div class="bar-group">
+                    <div class="bars">
+                      <div class="bar ok" style="height:0" data-h="85"></div>
+                      <div class="bar nok" style="height:0" data-h="85"></div>
+                    </div>
+                    <div class="bar-label">COUNTER_SLOT_CH<br><span style="color:#888">−0.05%</span></div>
+                  </div>
+                </div>
+                <p style="font-size:11px;color:#888;margin-top:12px">OK: BLD_000006 · NOK: BLD_000004 · 7×15min steady-state windows</p>
+              </div>
             </div>
-            <p style="font-size:12px;margin-top:12px">
-              Candidate: <code>abc123def456</code> [CHG-0042] · Msg3Armer.cpp
-            </p>
+
+            <!-- Comparing view -->
+            <div class="g5-panel" id="g5-comparing" style="display:none">
+              <div class="compare-btns">
+                <button class="p-btn p-btn-outlined loaded">Select Used SCF</button>
+                <button class="p-btn p-btn-outlined loaded">Select Golden configuration (.xlsm)</button>
+              </div>
+              <div class="isa_info">OK/NOK log groups loaded — TTI Trace compare ready</div>
+              <div class="item" style="min-height:160px">
+                <div class="handler"></div>
+                <div class="fieldset">
+                  <div class="fieldset-legend">TtiTrace Compare — Group A vs Group B</div>
+                  <div class="fieldset-body" style="font:12px Courier New,monospace;color:#333">
+                    Group A (OK):  2,847 events · 156ms span · 12 UEs<br>
+                    Group B (NOK): 2,801 events · 156ms span · 12 UEs<br>
+                    <span style="color:#f44336">Δ events: −46 (−1.6%) · scheduler-msg3 path divergence detected</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- L2Ps Trace placeholder -->
+            <div class="g5-panel" id="g5-l2ps" style="display:none">
+              <div class="open-row">
+                <span class="open-file">Open Files</span>
+                <span style="color:#888">|</span>
+                <span class="open-file">Open Folder</span>
+              </div>
+              <div class="item" style="min-height:240px">
+                <div class="handler"></div>
+                <div class="fieldset">
+                  <div class="fieldset-legend">TTI Trace Timeline</div>
+                  <div class="fieldset-body">
+                    <div id="trace-timeline" style="display:flex;gap:1px;height:36px;margin-top:8px"></div>
+                    <p style="font-size:11px;color:#888;margin-top:8px">2,847 events · Multi-UE scheduling · drag to zoom</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Other g5 panels placeholder -->
+            <div class="g5-panel" id="g5-other" style="display:none">
+              <div class="isa_info">Demo: switch to Snapshot / KPI Analyzer / Comparing / L2Ps Trace Analyzer for full views.</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="right-panel">
-      <div class="header">🤖 IDE Agent (Cursor / VS Code)</div>
-      <div class="chat" id="chat">
-        <div class="msg user">/query Show parsed modules for current session</div>
-        <div class="msg agent">
-          Reading <code>parser_servers/42805.json</code>…<br><br>
-          <code>curl --noproxy '*' localhost:4821/_upa/parsed_modules</code><br><br>
-          Found 38 modules: L2_ProtocolStack, L3_ControlPlane, Syslog, KPI_Report, …
-        </div>
-        <div class="msg user">Compare COUNTER_AVAIL_CH OK vs NOK</div>
-        <div class="msg agent">
-          OK: 568,425,464 · NOK: 534,669,170 · <strong style="color:var(--danger)">Δ −5.94%</strong><br>
-          COUNTER_SLOT_CH flat (−0.05%) → suggests <strong>invocation gap</strong>, not computation gap.
+      <!-- Other app panels -->
+      <div class="tab-panel" id="panel-other">
+        <div class="isa_info">Demo focuses on the <b>5G</b> tab. In production, LTE / RF / eCPRI / CRM / AirPhone / MSI / Troubleshooting are also available.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IDE Extension demo (separate window — NOT part of UP-Analyzer UI) -->
+  <div class="ide-overlay" id="ide-overlay">
+    <div class="ide-window">
+      <div class="ide-titlebar">
+        <span>Cursor — Agent Chat (UP-Analyzer Extension Demo)</span>
+        <button class="ide-close" onclick="hideIdeDemo()">✕</button>
+      </div>
+      <div class="ide-body">
+        <div class="ide-sidebar"><span>📁</span><span>🔍</span><span>🤖</span></div>
+        <div class="ide-main">
+          <div class="ide-tabs">
+            <div class="ide-tab">code.cpp</div>
+            <div class="ide-tab active">Agent</div>
+          </div>
+          <div class="ide-chat">
+            <div class="ide-msg user">&gt; /upa-status</div>
+            <div class="ide-msg agent">
+              Reading <code>~/.config/UP-Analyzer/parser_servers/42805.json</code><br>
+              <code>curl --noproxy '*' -s "http://127.0.0.1:4821/_upa/parsed_modules?ai=cursor"</code><br><br>
+              ✓ 1 reachable instance · 38 parsed modules
+            </div>
+            <div class="ide-msg user">&gt; Compare COUNTER_AVAIL_CH between OK and NOK logs</div>
+            <div class="ide-msg agent">
+              OK: 568,425,464 · NOK: 534,669,170 · <span style="color:#f48771">Δ −5.94%</span><br>
+              COUNTER_SLOT_CH flat (−0.05%) → suggests <b>invocation gap</b>, not computation gap.<br><br>
+              &gt; /upa-pr-investigate ISSUE-001<br>
+              Stage A ✓ → B ✓ → C ✓ → D ✓ → E: <span style="color:#4ec9b0">HOLDS</span><br>
+              Candidate: <code>abc123def456</code> [CHG-0042]
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // Tab switching
-    document.querySelectorAll('.tab, .nav-item[data-tab]').forEach(el => {
-      el.addEventListener('click', () => {
-        const panel = el.dataset.tab || el.dataset.panel;
-        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.panel === panel));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === panel));
-        document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
-        if (panel === 'kpi') animateBars();
-        if (panel === 'trace') renderTimeline();
+    const FILE_COLORS = ['#FFCCCC','#CCFFCC','#CCCCFF','#FFFFCC','#FFCCFF','#CCFFFF'];
+    const SYNTHETIC_FILES = [
+      'C:/demo/SITE-001_R3.2.1_BLD_000004/snapshot.zip',
+      'C:/demo/SITE-001_R3.2.1_BLD_000004/L2_ProtocolStack/',
+      'C:/demo/SITE-001_R3.2.1_BLD_000004/L3_ControlPlane/',
+      'C:/demo/SITE-001_R3.2.1_BLD_000004/Syslog/',
+    ];
+
+    // App-level tab switching
+    document.querySelectorAll('#app-tab-list .tab-list-item').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#app-tab-list .tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+        tab.classList.add('tab-list-active');
+        const is5g = tab.dataset.app === '5g';
+        document.getElementById('panel-5g').classList.toggle('active', is5g);
+        document.getElementById('panel-other').classList.toggle('active', !is5g);
       });
     });
 
-    function loadSnapshot() {
-      const dz = document.getElementById('dropzone');
-      const prog = document.getElementById('progress');
-      const bar = document.getElementById('progressBar');
-      const metrics = document.getElementById('metrics');
-      dz.classList.add('loaded');
-      dz.querySelector('h2').textContent = 'Parsing SITE-001_R3.2.1_BLD_000004…';
-      prog.classList.add('show');
-      let w = 0;
-      const iv = setInterval(() => {
-        w += 8;
-        bar.style.width = w + '%';
-        if (w >= 100) {
-          clearInterval(iv);
-          dz.querySelector('h2').textContent = '✓ Snapshot Loaded — 4 components, 38 modules';
-          dz.querySelector('p').textContent = 'Ready for KPI, Trace, and AI investigation';
-          metrics.style.display = 'grid';
-        }
-      }, 80);
+    // 5G sub-tab switching
+    const G5_VIEWS = {
+      snapshot: 'g5-snapshot',
+      kpi: 'g5-kpi',
+      comparing: 'g5-comparing',
+      l2ps: 'g5-l2ps',
+    };
+    document.querySelectorAll('#g5-tab-list .tab-list-item').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#g5-tab-list .tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+        tab.classList.add('tab-list-active');
+        const key = tab.dataset.g5;
+        document.querySelectorAll('.g5-panel').forEach(p => p.style.display = 'none');
+        const viewId = G5_VIEWS[key] || 'g5-other';
+        document.getElementById(viewId).style.display = 'block';
+        if (key === 'kpi') animateKpiBars();
+        if (key === 'l2ps') renderTraceTimeline();
+      });
+    });
+
+    function simulateLoad() {
+      const spinner = document.getElementById('spinner');
+      const filesBlock = document.getElementById('files-block');
+      const fileList = document.getElementById('file-list');
+      spinner.classList.add('show');
+      setTimeout(() => {
+        spinner.classList.remove('show');
+        filesBlock.style.display = 'block';
+        fileList.innerHTML = SYNTHETIC_FILES.map((f, i) =>
+          `<span class="colored-filename" style="background:${FILE_COLORS[i % FILE_COLORS.length]}">${i}:${f}</span><br>`
+        ).join('');
+      }, 1200);
     }
 
-    function animateBars() {
-      document.querySelectorAll('.bar').forEach(b => {
-        setTimeout(() => { b.style.height = b.dataset.h + 'px'; }, 100);
+    function animateKpiBars() {
+      document.querySelectorAll('#kpi-bars .bar').forEach(b => {
+        setTimeout(() => { b.style.height = b.dataset.h + 'px'; }, 80);
       });
     }
 
-    function renderTimeline() {
-      const tl = document.getElementById('timeline');
-      if (tl.children.length) return;
-      const colors = ['#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ef4444','#06b6d4'];
-      for (let i = 0; i < 60; i++) {
+    function renderTraceTimeline() {
+      const el = document.getElementById('trace-timeline');
+      if (el.children.length) return;
+      const colors = ['#2196F3','#4CAF50','#FF9800','#9C27B0','#f44336','#00BCD4'];
+      for (let i = 0; i < 80; i++) {
         const b = document.createElement('div');
-        b.className = 'timeline-block';
-        b.style.background = colors[i % colors.length];
-        b.style.opacity = 0.3 + Math.random() * 0.7;
-        tl.appendChild(b);
+        b.style.cssText = `flex:1;background:${colors[i % colors.length]};opacity:${0.3 + Math.random() * 0.7};min-height:${8 + Math.random() * 28}px;align-self:flex-end`;
+        el.appendChild(b);
       }
     }
 
-    // Auto-demo mode for video recording
-    let demoStep = 0;
-    function autoDemo() {
-      const steps = [
-        () => loadSnapshot(),
-        () => { document.querySelector('[data-panel="kpi"]').click(); },
-        () => { document.querySelector('[data-panel="trace"]').click(); },
-        () => { document.querySelector('[data-panel="investigate"]').click(); },
-      ];
-      if (demoStep < steps.length) {
-        steps[demoStep]();
-        demoStep++;
-        setTimeout(autoDemo, 3000);
-      }
+    function showIdeDemo() { document.getElementById('ide-overlay').classList.add('show'); }
+    function hideIdeDemo() { document.getElementById('ide-overlay').classList.remove('show'); }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hideIdeDemo(); });
+
+    // Auto-demo for video: cycle 5G tabs
+  function autoDemo() {
+    const sequence = ['snapshot', 'kpi', 'comparing', 'l2ps'];
+    let i = 0;
+    function next() {
+      if (i === 0) simulateLoad();
+      const tab = document.querySelector(`#g5-tab-list [data-g5="${sequence[i]}"]`);
+      if (tab) tab.click();
+      i = (i + 1) % sequence.length;
+      if (i === 0) setTimeout(() => { showIdeDemo(); setTimeout(hideIdeDemo, 4000); }, 2500);
+      setTimeout(next, 3500);
     }
-    // Uncomment next line for hands-free demo recording:
-    // setTimeout(autoDemo, 2000);
+    setTimeout(next, 1000);
+  }
+  // Uncomment for hands-free recording:
+  // autoDemo();
   </script>
 </body>
 </html>

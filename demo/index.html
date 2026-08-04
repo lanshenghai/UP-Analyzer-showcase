@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UP-Analyzer — Interactive Demo (Synthetic Data)</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface2: #243044;
+      --border: #2d3a4f;
+      --text: #e6edf3;
+      --muted: #8b9cb3;
+      --accent: #3b82f6;
+      --accent2: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: "Cascadia Code", "Consolas", monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .titlebar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .titlebar .dots { display: flex; gap: 6px; }
+    .titlebar .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+    .titlebar .title { color: var(--muted); flex: 1; text-align: center; }
+    .badge {
+      background: var(--accent);
+      color: white;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr 320px;
+      height: calc(100vh - 41px);
+    }
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 12px 0;
+      overflow-y: auto;
+    }
+    .sidebar h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 8px 16px;
+      letter-spacing: 0.05em;
+    }
+    .nav-item {
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+    }
+    .nav-item:hover { background: var(--surface2); }
+    .nav-item.active {
+      background: var(--surface2);
+      border-left-color: var(--accent);
+      color: var(--accent);
+    }
+    .tree { padding: 4px 0 4px 8px; font-size: 12px; }
+    .tree-item {
+      padding: 4px 8px 4px 20px;
+      cursor: pointer;
+      color: var(--muted);
+      position: relative;
+    }
+    .tree-item::before { content: "▸ "; color: var(--border); }
+    .tree-item.open::before { content: "▾ "; }
+    .tree-item.leaf::before { content: "· "; }
+    .tree-item:hover { color: var(--text); }
+    .tree-item.selected { color: var(--accent2); }
+    .main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 8px;
+    }
+    .tab {
+      padding: 10px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 48px;
+      text-align: center;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .dropzone:hover, .dropzone.loaded {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.05);
+    }
+    .dropzone .icon { font-size: 48px; margin-bottom: 12px; }
+    .dropzone h2 { font-size: 18px; margin-bottom: 8px; }
+    .dropzone p { color: var(--muted); font-size: 13px; }
+    .progress {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 2px;
+      margin: 16px 0;
+      overflow: hidden;
+      display: none;
+    }
+    .progress.show { display: block; }
+    .progress-bar {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .metric .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .metric .value { font-size: 24px; font-weight: 700; }
+    .metric .delta { font-size: 12px; margin-top: 4px; }
+    .delta.down { color: var(--danger); }
+    .delta.up { color: var(--accent2); }
+    .chart-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+    .bar-chart { display: flex; align-items: flex-end; gap: 24px; height: 200px; padding: 0 20px; }
+    .bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .bars { display: flex; gap: 6px; align-items: flex-end; height: 160px; }
+    .bar {
+      width: 32px;
+      border-radius: 4px 4px 0 0;
+      transition: height 0.6s ease;
+    }
+    .bar.ok { background: var(--accent2); }
+    .bar.nok { background: var(--danger); }
+    .bar-label { font-size: 11px; color: var(--muted); margin-top: 8px; text-align: center; }
+    .legend { display: flex; gap: 16px; margin-top: 12px; font-size: 12px; }
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .legend .ok::before { background: var(--accent2); }
+    .legend .nok::before { background: var(--danger); }
+    .right-panel {
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .right-panel .header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      font-size: 12px;
+    }
+    .msg {
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      line-height: 1.5;
+    }
+    .msg.user { background: var(--surface2); margin-left: 20px; }
+    .msg.agent { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); }
+    .msg .cmd {
+      font-family: var(--mono);
+      background: var(--bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .stage-list { padding: 12px; }
+    .stage {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .stage-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .stage-dot.done { background: var(--accent2); color: #000; }
+    .stage-dot.active { background: var(--accent); color: #fff; animation: pulse 1.5s infinite; }
+    .stage-dot.pending { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .demo-banner {
+      background: linear-gradient(90deg, #1e3a5f, #1a2332);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 16px;
+      font-size: 11px;
+      color: var(--warn);
+      text-align: center;
+    }
+    .timeline {
+      display: flex;
+      gap: 2px;
+      height: 40px;
+      margin-top: 12px;
+    }
+    .timeline-block {
+      flex: 1;
+      border-radius: 2px;
+      opacity: 0.8;
+    }
+    code { font-family: var(--mono); font-size: 11px; color: var(--accent2); }
+  </style>
+</head>
+<body>
+  <div class="demo-banner">
+    ⚠️ SYNTHETIC DEMO — All data is fictional. For portfolio showcase only. No proprietary content.
+  </div>
+  <div class="titlebar">
+    <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+    <div class="title">UP-Analyzer v12.1 — Engineering Log Intelligence Platform</div>
+    <span class="badge">DEMO</span>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <h3>Modules</h3>
+      <div class="nav-item active" data-tab="snapshot">📁 Snapshot</div>
+      <div class="nav-item" data-tab="kpi">📊 KPI Dashboard</div>
+      <div class="nav-item" data-tab="trace">📈 Trace View</div>
+      <div class="nav-item" data-tab="investigate">🔍 AI Investigation</div>
+      <h3 style="margin-top:16px">Parsed Tree</h3>
+      <div class="tree" id="tree">
+        <div class="tree-item open">SITE-001_Snapshot</div>
+        <div class="tree-item leaf selected" style="padding-left:36px">L2_ProtocolStack</div>
+        <div class="tree-item leaf" style="padding-left:36px">L3_ControlPlane</div>
+        <div class="tree-item leaf" style="padding-left:36px">Syslog</div>
+        <div class="tree-item leaf" style="padding-left:36px">Build Info</div>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="tabs">
+        <div class="tab active" data-panel="snapshot">Snapshot</div>
+        <div class="tab" data-panel="kpi">KPI Compare</div>
+        <div class="tab" data-panel="trace">TTI Trace</div>
+        <div class="tab" data-panel="investigate">Investigation</div>
+      </div>
+      <div class="content">
+        <!-- Snapshot Panel -->
+        <div class="panel active" id="panel-snapshot">
+          <div class="dropzone" id="dropzone" onclick="loadSnapshot()">
+            <div class="icon">📂</div>
+            <h2>Drop Snapshot Folder Here</h2>
+            <p>Synthetic: <code>SITE-001_R3.2.1_BLD_000004</code></p>
+            <p style="margin-top:8px">Click to simulate load → auto-discover 4 components</p>
+          </div>
+          <div class="progress" id="progress"><div class="progress-bar" id="progressBar"></div></div>
+          <div class="metrics" id="metrics" style="display:none">
+            <div class="metric"><div class="label">Components</div><div class="value">4</div></div>
+            <div class="metric"><div class="label">Parsers Run</div><div class="value">127</div></div>
+            <div class="metric"><div class="label">Modules</div><div class="value">38</div></div>
+            <div class="metric"><div class="label">Parse Time</div><div class="value">12s</div></div>
+          </div>
+        </div>
+
+        <!-- KPI Panel -->
+        <div class="panel" id="panel-kpi">
+          <div class="chart-container">
+            <div class="chart-title">OK vs NOK — Counter Comparison (CELL-111)</div>
+            <div class="bar-chart" id="barChart">
+              <div class="bar-group">
+                <div class="bars">
+                  <div class="bar ok" style="height:0" data-h="140"></div>
+                  <div class="bar nok" style="height:0" data-h="132"></div>
+                </div>
+                <div class="bar-label">COUNTER_AVAIL_CH<br><span style="color:var(--danger)">−5.9%</span></div>
+              </div>
+              <div class="bar-group">
+                <div class="bars">
+                  <div class="bar ok" style="height:0" data-h="100"></div>
+                  <div class="bar nok" style="height:0" data-h="102"></div>
+                </div>
+                <div class="bar-label">COUNTER_USED_CH<br><span style="color:var(--accent2)">+1.8%</span></div>
+              </div>
+              <div class="bar-group">
+                <div class="bars">
+                  <div class="bar ok" style="height:0" data-h="95"></div>
+                  <div class="bar nok" style="height:0" data-h="95"></div>
+                </div>
+                <div class="bar-label">COUNTER_SLOT_CH<br><span style="color:var(--muted)">−0.05%</span></div>
+              </div>
+            </div>
+            <div class="legend"><span class="ok">OK (BLD_000006)</span><span class="nok">NOK (BLD_000004)</span></div>
+          </div>
+        </div>
+
+        <!-- Trace Panel -->
+        <div class="panel" id="panel-trace">
+          <div class="chart-container">
+            <div class="chart-title">TTI Timeline — Scheduler Events (synthetic)</div>
+            <div class="timeline" id="timeline"></div>
+            <p style="font-size:12px;color:var(--muted);margin-top:12px">
+              2,847 events decoded · 156ms span · Multi-UE scheduling visualization
+            </p>
+          </div>
+        </div>
+
+        <!-- Investigation Panel -->
+        <div class="panel" id="panel-investigate">
+          <div class="chart-container">
+            <div class="chart-title">Staged Investigation — ISSUE-001</div>
+            <div class="stage-list" id="stages">
+              <div class="stage"><div class="stage-dot done">A</div><div><strong>Working Set</strong><br><span style="color:var(--muted)">4 counters pinned</span></div></div>
+              <div class="stage"><div class="stage-dot done">B</div><div><strong>Quantify</strong><br><span style="color:var(--muted)">−5.94% confirmed, load comparable</span></div></div>
+              <div class="stage"><div class="stage-dot done">C</div><div><strong>Call-Site</strong><br><span style="color:var(--muted)">primarySuspect: COUNTER_AVAIL_CH</span></div></div>
+              <div class="stage"><div class="stage-dot done">D</div><div><strong>Mechanism</strong><br><span style="color:var(--muted)">invocation gap · behavior-control</span></div></div>
+              <div class="stage"><div class="stage-dot active">E</div><div><strong>Adversarial Review</strong><br><span style="color:var(--accent2)">Verdict: HOLDS ✓</span></div></div>
+            </div>
+            <p style="font-size:12px;margin-top:12px">
+              Candidate: <code>abc123def456</code> [CHG-0042] · Msg3Armer.cpp
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="header">🤖 IDE Agent (Cursor / VS Code)</div>
+      <div class="chat" id="chat">
+        <div class="msg user">/query Show parsed modules for current session</div>
+        <div class="msg agent">
+          Reading <code>parser_servers/42805.json</code>…<br><br>
+          <code>curl --noproxy '*' localhost:4821/_upa/parsed_modules</code><br><br>
+          Found 38 modules: L2_ProtocolStack, L3_ControlPlane, Syslog, KPI_Report, …
+        </div>
+        <div class="msg user">Compare COUNTER_AVAIL_CH OK vs NOK</div>
+        <div class="msg agent">
+          OK: 568,425,464 · NOK: 534,669,170 · <strong style="color:var(--danger)">Δ −5.94%</strong><br>
+          COUNTER_SLOT_CH flat (−0.05%) → suggests <strong>invocation gap</strong>, not computation gap.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.tab, .nav-item[data-tab]').forEach(el => {
+      el.addEventListener('click', () => {
+        const panel = el.dataset.tab || el.dataset.panel;
+        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.panel === panel));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === panel));
+        document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
+        if (panel === 'kpi') animateBars();
+        if (panel === 'trace') renderTimeline();
+      });
+    });
+
+    function loadSnapshot() {
+      const dz = document.getElementById('dropzone');
+      const prog = document.getElementById('progress');
+      const bar = document.getElementById('progressBar');
+      const metrics = document.getElementById('metrics');
+      dz.classList.add('loaded');
+      dz.querySelector('h2').textContent = 'Parsing SITE-001_R3.2.1_BLD_000004…';
+      prog.classList.add('show');
+      let w = 0;
+      const iv = setInterval(() => {
+        w += 8;
+        bar.style.width = w + '%';
+        if (w >= 100) {
+          clearInterval(iv);
+          dz.querySelector('h2').textContent = '✓ Snapshot Loaded — 4 components, 38 modules';
+          dz.querySelector('p').textContent = 'Ready for KPI, Trace, and AI investigation';
+          metrics.style.display = 'grid';
+        }
+      }, 80);
+    }
+
+    function animateBars() {
+      document.querySelectorAll('.bar').forEach(b => {
+        setTimeout(() => { b.style.height = b.dataset.h + 'px'; }, 100);
+      });
+    }
+
+    function renderTimeline() {
+      const tl = document.getElementById('timeline');
+      if (tl.children.length) return;
+      const colors = ['#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ef4444','#06b6d4'];
+      for (let i = 0; i < 60; i++) {
+        const b = document.createElement('div');
+        b.className = 'timeline-block';
+        b.style.background = colors[i % colors.length];
+        b.style.opacity = 0.3 + Math.random() * 0.7;
+        tl.appendChild(b);
+      }
+    }
+
+    // Auto-demo mode for video recording
+    let demoStep = 0;
+    function autoDemo() {
+      const steps = [
+        () => loadSnapshot(),
+        () => { document.querySelector('[data-panel="kpi"]').click(); },
+        () => { document.querySelector('[data-panel="trace"]').click(); },
+        () => { document.querySelector('[data-panel="investigate"]').click(); },
+      ];
+      if (demoStep < steps.length) {
+        steps[demoStep]();
+        demoStep++;
+        setTimeout(autoDemo, 3000);
+      }
+    }
+    // Uncomment next line for hands-free demo recording:
+    // setTimeout(autoDemo, 2000);
+  </script>
+</body>
+</html>

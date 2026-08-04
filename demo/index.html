@@ -22,7 +22,7 @@
       padding: 3px; margin: -8px -8px 4px; border-bottom: 1px solid #e6c200;
     }
 
-    .app-header { position: relative; min-height: 28px; margin-bottom: 3px; }
+    .app-header { position: relative; min-height: 42px; margin-bottom: 3px; }
     .version {
       position: absolute; top: 2px; left: 50%; transform: translateX(-50%);
       display: flex; flex-direction: column; align-items: center; gap: 0; z-index: 1;
@@ -163,6 +163,47 @@
     .link-list { font-size: 13px; line-height: 1.8; padding: 8px 16px; }
     .link-list h3 { font-size: 14px; margin: 12px 0 6px; color: #124191; }
     .link-list a { color: #0000ee; }
+
+    /* L2Ps TTI trace charts */
+    .l2ps-files { min-height: 20px; margin-bottom: 4px; }
+    .tti-toolbar { display: flex; gap: 6px; justify-content: flex-end; margin: 4px 0 6px; flex-wrap: wrap; }
+    .tti-toolbar .preview-on { background: #90EE90 !important; border-color: #4CAF50 !important; color: #1b5e20 !important; }
+    .tti-chart-block { border: 1px solid #d0d0d0; margin: 6px 4px; background: #fff; }
+    .tti-chart-head {
+      display: flex; align-items: center; gap: 6px; padding: 4px 8px;
+      border-bottom: 1px solid #eee; font-size: 11px; flex-wrap: wrap;
+    }
+    .tti-chart-head select { font-size: 11px; padding: 1px 4px; }
+    .tti-chart-title { font-weight: bold; margin-left: auto; font-size: 12px; }
+    .tti-chart-wrap {
+      position: relative; margin: 8px 12px 4px; border-left: 1px solid #ccc; border-bottom: 1px solid #ccc;
+      background: linear-gradient(to bottom, transparent 24%, #f5f5f5 24%, #f5f5f5 25%, transparent 25%, transparent 49%, #f5f5f5 49%, #f5f5f5 50%, transparent 50%, transparent 74%, #f5f5f5 74%, #f5f5f5 75%);
+    }
+    .tti-chart-bars { display: flex; align-items: flex-end; gap: 0; height: 100%; padding: 0 2px; }
+    .tti-chart-bars span { flex: 1; min-width: 2px; background: #FF8C00; opacity: 0.88; }
+    .tti-marker {
+      position: absolute; top: 0; bottom: 18px; width: 0; border-left: 2px dashed #e53935; z-index: 2; pointer-events: none;
+    }
+    .tti-xaxis {
+      display: flex; justify-content: space-between; font-size: 10px; color: #666;
+      padding: 2px 12px 6px; font-family: Verdana, sans-serif;
+    }
+    .tti-subcell-wrap {
+      position: relative; margin: 8px 12px 4px; height: 100px; border-left: 1px solid #ccc; border-bottom: 1px solid #ccc;
+      background: #fafafa;
+    }
+    .tti-subcell-bands {
+      display: flex; height: 70%; margin-top: 12px; align-items: stretch;
+    }
+    .tti-subcell-bands div {
+      flex: 1; border-right: 1px solid #ddd; display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: #888;
+    }
+    .tti-subcell-line {
+      position: absolute; left: 0; right: 0; top: 55%; height: 2px; background: #FF8C00;
+    }
+    .l2ps-sub-tabs { margin-top: 2px; }
+    .l2ps-sub-tabs .tab-list-item { font-size: 10px; height: 18px; padding: 1px 0.35em; }
 
     /* overlays */
     .lb-overlay, .ide-overlay {
@@ -364,22 +405,81 @@
         '<div class="tabs inner-tab-list" id="snap-tabs"><ol class="tab-list snap-tab-list">' + snapTabs + '</ol><div class="tab-content">' + bodies + '</div></div></div>';
     }
 
-    const L2PS_TABS = ['DL','UL','PDCCH','RACH','Scheduling','AutoAnalyzer','UE Table','PmCounter'];
+    const L2PS_TABS = ['DL','UL','PDCCH','RACH','BwpSwitch','DPA','PagingOrSib','PmCounter','DRX','DSS','Scheduling','UE Table','AutoAnalyzer','Troubleshooting'];
+    const L2PS_DL_SUB = ['Cell','Inter Cells','UE Overall','UE Per Second','UE Per TTI','UE Location','Statistics','ApsCorrelation','CPU Load','EIRP','L1Pooling','L2Pooling','MAX HARQ Table','Slice'];
+
+    function l2psOpenRow() {
+      return '<div class="open-row"><span>Analyze:</span><span class="open-file">Open CSV Files</span><span style="color:#888">|</span><span class="open-file">Open .bin/.pcap Files</span><span style="color:#888">|</span><span class="open-file">Open .bin/.pcap Files as json</span></div>';
+    }
+
+    function l2psFileBar() {
+      return '<div class="files-block l2ps-files"><div class="snapshot-tags" style="right:0">' +
+        '<span class="tag-string">SwVersion: SBTS23R3_ENB_9999_230515_000001</span>' +
+        '<span class="tag-string">SHA1: 34007f11240e...</span><span class="tag-string">No Beam Info</span></div>' +
+        '<div class="show-files"><span class="colored-filename" style="background:#CCFFCC">1:C:\\\\Users\\\\demo\\\\20210713_1740_TTI.bin.87.dlAndUl__all.csv</span></div></div>';
+    }
+
+    function ttiChartHead(title) {
+      return '<div class="tti-chart-head"><select><option>lines</option></select><select><option>tti</option><option>10ms</option><option>100ms</option><option>second</option></select>' +
+        '<select><option>no second chart added</option></select><span class="tti-chart-title">' + title + '</span></div>';
+    }
+
+    function ttiSpikeChart(height, seed) {
+      let bars = '';
+      for (let i = 0; i < 140; i++) {
+        let h = 2;
+        if (i > 60 && i < 100) h = 15 + ((seed + i * 7) % 80);
+        else if ((seed + i) % 11 === 0) h = 8 + ((seed + i * 3) % 25);
+        bars += '<span style="height:' + h + '%"></span>';
+      }
+      return '<div class="tti-chart-wrap" style="height:' + height + 'px"><div class="tti-marker" style="left:44%"></div><div class="tti-marker" style="left:58%"></div>' +
+        '<div class="tti-chart-bars">' + bars + '</div></div>' +
+        '<div class="tti-xaxis"><span>20:15:30</span><span>20:15:40</span><span>20:15:50</span><span>20:16:00</span><span>20:16:10</span><span>20:16:20</span><span>20:16:30</span></div>';
+    }
+
+    function ttiSubcellChart() {
+      const colors = ['#fce4ec','#f3e5f5','#e8eaf6','#e3f2fd','#e0f2f1','#f1f8e9','#fff8e1','#fbe9e7','#efebe9','#eceff1','#e8f5e9','#fff3e0','#f9fbe7'];
+      const bands = colors.map((c, i) => '<div style="background:' + c + '">' + i + '</div>').join('');
+      return '<div class="tti-subcell-wrap"><div class="tti-marker" style="left:44%"></div><div class="tti-marker" style="left:58%"></div><div class="tti-subcell-bands">' + bands + '</div><div class="tti-subcell-line"></div></div>' +
+        '<div class="tti-xaxis"><span>20:15:30</span><span>20:15:40</span><span>20:15:50</span><span>20:16:00</span><span>20:16:10</span><span>20:16:20</span><span>20:16:30</span></div>';
+    }
+
+    function dlCellView() {
+      return '<div class="tti-toolbar">' +
+        '<button class="p-btn preview-on">Preview Enabled</button>' +
+        '<button class="p-btn p-btn-outlined">Expand All</button><button class="p-btn p-btn-outlined">Collapse All</button><button class="p-btn p-btn-outlined">Save Page</button></div>' +
+        '<div class="tti-chart-block">' + ttiChartHead('dlFdSchedData numOfPrb') + ttiSpikeChart(130, 42) + '</div>' +
+        '<div class="tti-chart-block">' + ttiChartHead('dlTdSchedSubcellData numOfPrb') + ttiSubcellChart() + '</div>';
+    }
+
     function l2psPanel() {
-      const tabs = L2PS_TABS.map((t,i) => '<li class="tab-list-item' + (i===4?' tab-list-active':'') + '" data-l2ps="' + t + '">' + t + '</li>').join('');
-      const scheduling = item('Scheduling 时间轴', '<div id="trace-timeline" style="display:flex;gap:1px;height:40px;margin-top:4px"></div><p style="font-size:11px;color:#888;margin-top:6px">2,847 事件 · 12 UE · 拖拽缩放</p>', 180);
-      const auto = '<div class="isa_info" style="margin-top:0">AutoAnalyzer — 规则引擎扫描</div>' + item('规则命中', '<div class="mono"><span class="rule-hit">[UE-42] DL grant 连续 3 slot 缺失</span><br><span class="rule-hit">[Cell-111] PDCCH CCE &gt; 85%</span><br><span class="rule-ok">Cell-112 UL PRB 正常</span></div>');
-      const dl = item('DL PRB 分配', heatmap(14, 4, i => 'hsl(120,' + (40 + (i%14)*4) + '%,' + (45 + (i%7)*5) + '%)'));
-      const ul = item('UL PRB 分配', heatmap(14, 4, i => 'hsl(200,' + (35 + (i%10)*5) + '%,' + (50 + (i%6)*4) + '%)'));
-      const pdcch = item('PDCCH CCE 占用', sparkline([30,45,62,88,92,85,70,55,40,35,50,65,80,75,60,45]));
+      const tabs = L2PS_TABS.map((t,i) => '<li class="tab-list-item' + (t==='DL'?' tab-list-active':'') + '" data-l2ps="' + t + '">' + t + '</li>').join('');
+      const dlSubTabs = L2PS_DL_SUB.map((t,i) => '<li class="tab-list-item' + (t==='Cell'?' tab-list-active':'') + '" data-l2ps-sub="' + t + '">' + t + '</li>').join('');
+      const dlBody = '<div class="tabs l2ps-sub-tabs"><ol class="tab-list">' + dlSubTabs + '</ol><div class="tab-content" style="border:none;padding:4px 0">' +
+        '<div class="l2ps-sub-body" data-l2ps-sub-body="Cell">' + dlCellView() + '</div>' +
+        L2PS_DL_SUB.filter(t => t !== 'Cell').map(t =>
+          '<div class="l2ps-sub-body" data-l2ps-sub-body="' + t + '" style="display:none">' +
+          item(t, '<div class="mono">DL / ' + t + ' — synthetic trace view</div>', 120) + '</div>'
+        ).join('') + '</div></div>';
       const bodies = {
-        DL: dl, UL: ul, PDCCH: pdcch, RACH: item('RACH 统计', table(['时隙','Msg1','Msg2','Msg3'], [['1024:3','4','4','3'],['1024:4','2','2','2'],['1024:5','6','5','5']])),
-        Scheduling: scheduling, AutoAnalyzer: auto,
-        'UE Table': item('UE 列表', table(['RNTI','C-RNTI','MCS DL','MCS UL','HARQ'], [['0x2A','17042','27','22','OK'],['0x2B','17043','24','20','NACK×2'],['0x2C','17044','28','24','OK']])),
-        PmCounter: item('PmCounter 趋势', sparkline([55,58,62,60,57,54,52,50,48,52,58,63,61,59,56,54]) + '<p style="font-size:11px;color:#888;margin-top:6px">dlUsedPrbAvg · 15 分钟窗口</p>'),
+        DL: dlBody,
+        UL: item('UL Cell', heatmap(14, 4, i => 'hsl(200,'+(35+(i%10)*5)+'%,'+(50+(i%6)*4)+'%)'), 160),
+        PDCCH: item('PDCCH CCE Usage', sparkline([30,45,62,88,92,85,70,55,40,35,50,65,80,75,60,45]), 140),
+        RACH: item('RACH Statistics', table(['Slot','Msg1','Msg2','Msg3'], [['641:16','4','4','3'],['641:17','2','2','2']])),
+        BwpSwitch: item('BwpSwitch', '<div class="mono">UE-17042 BWP switch: BWP#0 → BWP#1 @ sfn 641:18</div>'),
+        DPA: item('DPA DAI Table', table(['UE','DAI','HARQ'], [['17042','0','ACK'],['17043','1','NACK']])),
+        PagingOrSib: item('PagingOrSib', '<div class="mono">SIB1 scheduled · Paging occasion slot 641:20</div>'),
+        PmCounter: item('PmCounter', sparkline([55,58,62,60,57,54,52,50,48,52,58,63,61,59,56,54])),
+        DRX: item('DRX', '<div class="mono">UE-17042 DRX cycle 40ms · On Duration slot 641:16</div>'),
+        DSS: item('DSS DL Bitmap', heatmap(10, 2, i => 'hsl(40,'+(30+(i%8)*8)+'%,70%)')),
+        Scheduling: item('Scheduling Table', table(['SFN:Slot','UE','Type'], [['641:16','17042','DL'],['641:17','17043','UL']])),
+        'UE Table': item('UE Table', table(['RNTI','C-RNTI','MCS DL','HARQ'], [['0x2A','17042','27','OK'],['0x2B','17043','24','NACK×2']])),
+        AutoAnalyzer: '<div class="isa_info" style="margin-top:0">AutoAnalyzer — tti_trace_reminder</div>' + item('规则命中', '<div class="mono"><span class="rule-hit">[UE-42] DL grant 连续 3 slot 缺失</span><br><span class="rule-hit">[Cell-111] PDCCH CCE &gt; 85%</span></div>'),
+        Troubleshooting: item('Troubleshooting', '<div class="link-list" style="padding:0"><a href="#">DL RLC Latency guide</a><br><a href="#">RACH troubleshooting guide</a></div>'),
       };
-      const bodyHtml = L2PS_TABS.map(t => '<div class="l2ps-body" data-l2ps-body="' + t + '" style="display:' + (t==='Scheduling'?'block':'none') + '">' + bodies[t] + '</div>').join('');
-      return '<div class="view-panel" data-view="l2ps">' + openRow() + '<div class="tabs inner-tab-list"><ol class="tab-list">' + tabs + '</ol><div class="tab-content" style="border:none;padding:0">' + bodyHtml + '</div></div></div>';
+      const bodyHtml = L2PS_TABS.map(t => '<div class="l2ps-body" data-l2ps-body="' + t + '" style="display:' + (t==='DL'?'block':'none') + '">' + bodies[t] + '</div>').join('');
+      return '<div class="view-panel" data-view="l2ps">' + l2psOpenRow() + l2psFileBar() +
+        '<div class="tabs inner-tab-list"><ol class="tab-list">' + tabs + '</ol><div class="tab-content" style="border:none;padding:0">' + bodyHtml + '</div></div></div>';
     }
 
     const COMP_TABS = ['SCF vs. SCF','SCF vs. Default','Used vs. Golden','RD Parameters','L2Ps TtiTrace','Source Commits'];
@@ -597,7 +697,6 @@
 
     function onG5Switch(key) {
       if (key === 'kpi') animateKpiBars();
-      if (key === 'l2ps') renderTraceTimeline();
     }
 
     function wireSnapTabs() {
@@ -616,12 +715,23 @@
     function wireL2psTabs() {
       document.querySelectorAll('[data-l2ps]').forEach(tab => {
         tab.addEventListener('click', () => {
-          const root = tab.closest('.tabs');
-          root.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+          const root = tab.closest('.inner-tab-list') || tab.closest('.tabs');
+          const list = tab.closest('.tab-list');
+          list.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
           tab.classList.add('tab-list-active');
           const k = tab.dataset.l2ps;
-          root.querySelectorAll('.l2ps-body').forEach(b => b.style.display = b.dataset.l2psBody === k ? 'block' : 'none');
-          if (k === 'Scheduling') renderTraceTimeline();
+          const panel = document.getElementById('g5-l2ps') || document.querySelector('[data-view="l2ps"]');
+          if (panel) panel.querySelectorAll('.l2ps-body').forEach(b => b.style.display = b.dataset.l2psBody === k ? 'block' : 'none');
+        });
+      });
+      document.querySelectorAll('[data-l2ps-sub]').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const list = tab.closest('.tab-list');
+          list.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+          tab.classList.add('tab-list-active');
+          const k = tab.dataset.l2psSub;
+          const dlBody = tab.closest('.l2ps-sub-tabs');
+          if (dlBody) dlBody.querySelectorAll('.l2ps-sub-body').forEach(b => b.style.display = b.dataset.l2psSubBody === k ? 'block' : 'none');
         });
       });
     }

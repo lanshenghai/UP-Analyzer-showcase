@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UP-Analyzer</title>
+  <link rel="icon" href="assets/icon.png">
+  <style>
+    /* Matched to UP-Analyzer src/tabs/styles.css + src/index.css */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #fff;
+      color: #333;
+      font-size: 14px;
+      overflow: hidden;
+    }
+    body { margin: 8px; display: flex; flex-direction: column; }
+
+    .demo-strip {
+      background: #FEEFB3;
+      color: #9F6000;
+      font-size: 11px;
+      text-align: center;
+      padding: 3px;
+      margin: -8px -8px 4px;
+      border-bottom: 1px solid #e6c200;
+    }
+
+    .app-header {
+      position: relative;
+      min-height: 28px;
+      margin-bottom: 3px;
+    }
+    .version {
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: inherit;
+      z-index: 1;
+    }
+    .version label { font-size: inherit; }
+    .whats-new {
+      font-size: 12px;
+      color: #124191;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .top-right {
+      position: absolute;
+      right: 10px;
+      top: 0;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      transform: translateY(-4px);
+      z-index: 2;
+    }
+    .search-box {
+      border: 1px solid #ced4da;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-size: 12px;
+      width: 120px;
+      height: 22px;
+    }
+    .p-btn {
+      box-sizing: border-box;
+      min-height: 22px;
+      height: 22px;
+      padding: 0 0.45rem;
+      font-size: 12px;
+      border: 1px solid #3B82F6;
+      background: #3B82F6;
+      color: #fff;
+      border-radius: 3px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+    }
+    .p-btn:hover { background: #2563eb; }
+    .p-btn-outlined {
+      background: #fff;
+      color: #3B82F6;
+    }
+    .p-btn-outlined:hover { background: #eff6ff; }
+
+    /* tabs/styles.css */
+    .tabs { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .tab-list {
+      border-bottom: 1px solid #2196F3;
+      padding-left: 0;
+      margin: 3px 0 0;
+      list-style: none;
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+    .tab-list-item {
+      display: inline-block;
+      margin: 2px 0 -1px 3px;
+      border: 1px solid #2196F3;
+      padding: 3px 0.5em;
+      background: #DDE;
+      cursor: pointer;
+      font: bold 12px Verdana, sans-serif;
+      color: #448;
+      height: 23px;
+      user-select: none;
+    }
+    .tab-list-item:hover:not(.tab-list-active) {
+      color: #118df3;
+      background: #AAE;
+      border-color: #227;
+    }
+    .tab-list-item.tab-list-active {
+      background: white;
+      border-bottom: 1px solid white;
+    }
+    .tab-content {
+      border: 1px solid #2196F3;
+      border-top: none;
+      padding: 5px;
+      flex: 1;
+      overflow: auto;
+      position: relative;
+      min-height: 0;
+      background: #fff;
+    }
+    .tab-panel { display: none; height: 100%; }
+    .tab-panel.active { display: flex; flex-direction: column; }
+
+    /* ParentComp / SelectFiles */
+    .open-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+    .open-file {
+      font-size: 14px;
+      font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+      color: #0000ee;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .open-file:hover { color: #124191; }
+
+    .files-block {
+      position: relative;
+      margin-bottom: 6px;
+    }
+    .show-files {
+      font: normal 12px "Courier New", Courier, Monospace;
+      line-height: 1.4em;
+      word-break: break-all;
+    }
+    .colored-filename {
+      cursor: pointer;
+      padding: 0 2px;
+    }
+    .colored-filename:hover { text-decoration: underline; }
+
+    .tags {
+      display: flex;
+      position: absolute;
+      right: 10px;
+      top: 0;
+      gap: 5px;
+    }
+    .tag-string {
+      color: #fff;
+      background-color: #21d4f3;
+      border-radius: 3px;
+      padding: 0 4px;
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    /* fieldset / item */
+    .item {
+      box-shadow: 2px 2px 1px #a6a6a6;
+      border: 1px solid #e6e6e6;
+      margin: 5px;
+      background: white;
+      flex: 1;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+    }
+    .handler {
+      height: 8px;
+      cursor: move;
+      background-color: #d8ecf3;
+    }
+    .fieldset {
+      border: 1px solid rgba(0, 242, 255, 0.3);
+      margin: 4px;
+      padding: 4px;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      font-size: smaller;
+      flex: 1;
+    }
+    .fieldset-legend {
+      padding: 2px 8px;
+      font-weight: bold;
+      font-size: 12px;
+      color: #333;
+    }
+    .fieldset-body { padding: 8px; }
+
+    /* Cell mapping table mock */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-family: Verdana, sans-serif;
+    }
+    .data-table th, .data-table td {
+      border: 1px solid #ccc;
+      padding: 4px 8px;
+      text-align: left;
+    }
+    .data-table th { background: #f4f4f4; }
+
+    /* KPI chart area */
+    .chart-area {
+      padding: 12px;
+      font-family: Verdana, sans-serif;
+    }
+    .chart-title { font-weight: bold; font-size: 13px; margin-bottom: 12px; }
+    .bar-row { display: flex; align-items: flex-end; gap: 32px; height: 180px; padding: 0 20px; }
+    .bar-group { text-align: center; }
+    .bars { display: flex; gap: 4px; align-items: flex-end; height: 140px; }
+    .bar { width: 28px; border-radius: 2px 2px 0 0; transition: height 0.5s; }
+    .bar.ok { background: #4CAF50; }
+    .bar.nok { background: #f44336; }
+    .bar-label { font-size: 11px; margin-top: 6px; color: #555; }
+
+    /* Comparing */
+    .compare-btns { margin-bottom: 10px; }
+    .compare-btns .p-btn-outlined.loaded { background: lightgreen; }
+
+    /* IDE overlay — separate window style */
+    .ide-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .ide-overlay.show { display: flex; }
+    .ide-window {
+      width: 92%;
+      max-width: 1100px;
+      height: 80%;
+      background: #1e1e1e;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .ide-titlebar {
+      background: #323233;
+      color: #ccc;
+      padding: 6px 12px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ide-body { display: flex; flex: 1; overflow: hidden; }
+    .ide-sidebar {
+      width: 48px;
+      background: #252526;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 8px;
+      gap: 12px;
+      font-size: 20px;
+    }
+    .ide-main { flex: 1; display: flex; flex-direction: column; }
+    .ide-tabs {
+      background: #2d2d2d;
+      display: flex;
+      padding: 0 8px;
+      font-size: 12px;
+      color: #969696;
+    }
+    .ide-tab {
+      padding: 8px 16px;
+      border-top: 2px solid transparent;
+    }
+    .ide-tab.active {
+      color: #fff;
+      background: #1e1e1e;
+      border-top-color: #007acc;
+    }
+    .ide-chat {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      font-family: Consolas, monospace;
+      font-size: 12px;
+      color: #d4d4d4;
+    }
+    .ide-msg { margin-bottom: 12px; line-height: 1.5; }
+    .ide-msg.user { color: #9cdcfe; }
+    .ide-msg.agent { color: #ce9178; }
+    .ide-msg code { color: #b5cea8; background: #2d2d2d; padding: 1px 4px; }
+    .ide-close {
+      background: none;
+      border: none;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .isa_info {
+      margin: 6px 0;
+      padding: 8px 12px;
+      border-radius: 0.5em;
+      box-shadow: 1px 1px 3px #888;
+      color: #00529B;
+      background-color: #BDE5F8;
+      font-size: 12px;
+    }
+
+    .spinner-mask {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.7);
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      font: bold 13px Verdana, sans-serif;
+      color: #2196F3;
+    }
+    .spinner-mask.show { display: flex; }
+  </style>
+</head>
+<body>
+  <div class="demo-strip">
+    ⚠️ 脱敏演示页 — 界面样式对齐真实 UP-Analyzer，数据均为虚构。按 Esc 关闭 IDE 演示窗。
+  </div>
+
+  <div class="app-header">
+    <div class="version">
+      <label>v12.1.1</label>
+      <span class="whats-new">What's New</span>
+    </div>
+    <div class="top-right">
+      <input class="search-box" placeholder="Search..." readonly>
+      <button class="p-btn">LogBrowser</button>
+      <button class="p-btn">TtiTraceHelper</button>
+      <button class="p-btn">Help</button>
+      <button class="p-btn p-btn-outlined" onclick="showIdeDemo()" title="演示 IDE 插件（独立窗口）">IDE Demo</button>
+    </div>
+  </div>
+
+  <!-- App-level tabs: App.js -->
+  <div class="tabs" id="app-tabs">
+    <ol class="tab-list" id="app-tab-list">
+      <li class="tab-list-item" data-app="lte">LTE</li>
+      <li class="tab-list-item tab-list-active" data-app="5g">5G</li>
+      <li class="tab-list-item" data-app="rf">RF</li>
+      <li class="tab-list-item" data-app="ecpri">eCPRI</li>
+      <li class="tab-list-item" data-app="crm">CRM</li>
+      <li class="tab-list-item" data-app="airphone">AirPhone</li>
+      <li class="tab-list-item" data-app="msi">MSI</li>
+      <li class="tab-list-item" data-app="tools">🔧 Troubleshooting</li>
+    </ol>
+
+    <div class="tab-content">
+      <!-- ========== 5G panel ========== -->
+      <div class="tab-panel active" id="panel-5g">
+        <!-- G5.js sub-tabs -->
+        <div class="tabs" id="g5-tabs">
+          <ol class="tab-list" id="g5-tab-list">
+            <li class="tab-list-item" data-g5="l1hb">L1 HB Analyzer</li>
+            <li class="tab-list-item" data-g5="syslog">Syslog Analyzer</li>
+            <li class="tab-list-item" data-g5="l2ps">L2Ps Trace Analyzer</li>
+            <li class="tab-list-item" data-g5="l2lo">L2Lo Trace Analyzer</li>
+            <li class="tab-list-item" data-g5="l2hidu">L2HiDu Trace Analyzer</li>
+            <li class="tab-list-item" data-g5="l2hicu">L2HiCu Trace Analyzer</li>
+            <li class="tab-list-item" data-g5="bip">Bip log Analyzer</li>
+            <li class="tab-list-item" data-g5="timemarker">L2Rt TimeMarker</li>
+            <li class="tab-list-item" data-g5="kpi">KPI Analyzer</li>
+            <li class="tab-list-item tab-list-active" data-g5="snapshot">Snapshot</li>
+            <li class="tab-list-item" data-g5="longterm">LongtermKPI</li>
+            <li class="tab-list-item" data-g5="comparing">Comparing</li>
+          </ol>
+
+          <div class="tab-content" style="position:relative">
+            <div class="spinner-mask" id="spinner"><span>Parsing…</span></div>
+
+            <!-- Snapshot view -->
+            <div class="g5-panel active" id="g5-snapshot">
+              <div class="open-row">
+                <span class="open-file" onclick="simulateLoad()">Open Files</span>
+                <span style="color:#888">|</span>
+                <span class="open-file" onclick="simulateLoad()">Open Folder</span>
+              </div>
+              <div class="files-block" id="files-block" style="display:none">
+                <div class="tags">
+                  <span class="tag-string" id="tag-version">SwVersion: R3.2.1_BLD_000004</span>
+                  <span class="tag-string">SnapshotTime: 2026-03-04 12:00:00</span>
+                </div>
+                <div class="show-files" id="file-list"></div>
+              </div>
+
+              <!-- Inner Snapshot tabs -->
+              <div class="tabs" style="margin-top:8px;flex:1" id="snap-tabs">
+                <ol class="tab-list">
+                  <li class="tab-list-item tab-list-active" data-snap="cell">CellMapping</li>
+                  <li class="tab-list-item" data-snap="syslog">Syslog</li>
+                  <li class="tab-list-item" data-snap="kpi">KPI</li>
+                  <li class="tab-list-item" data-snap="l2ps">L2Ps Trace</li>
+                  <li class="tab-list-item" data-snap="build">Build Info</li>
+                </ol>
+                <div class="tab-content">
+                  <div class="item">
+                    <div class="handler"></div>
+                    <div class="fieldset">
+                      <div class="fieldset-legend">Cell Mapping</div>
+                      <div class="fieldset-body">
+                        <table class="data-table">
+                          <tr><th>Cell ID</th><th>lcrId</th><th>Band</th><th>PCI</th><th>Status</th></tr>
+                          <tr><td>NRCELL-111</td><td>111</td><td>n78</td><td>111</td><td>Active</td></tr>
+                          <tr><td>NRCELL-112</td><td>112</td><td>n78</td><td>112</td><td>Active</td></tr>
+                          <tr><td>NRCELL-113</td><td>113</td><td>n78</td><td>113</td><td>Inactive</td></tr>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- KPI Analyzer view -->
+            <div class="g5-panel" id="g5-kpi" style="display:none">
+              <div class="open-row">
+                <span class="open-file">Open Files</span>
+                <span style="color:#888">|</span>
+                <span class="open-file">Open Folder</span>
+              </div>
+              <div class="isa_info">Loaded: synthetic KPI report — OK vs NOK comparison</div>
+              <div class="chart-area">
+                <div class="chart-title">PM Counter Comparison — NRCELL-111</div>
+                <div class="bar-row" id="kpi-bars">
+                  <div class="bar-group">
+                    <div class="bars">
+                      <div class="bar ok" style="height:0" data-h="120"></div>
+                      <div class="bar nok" style="height:0" data-h="113"></div>
+                    </div>
+                    <div class="bar-label">COUNTER_AVAIL_CH<br><span style="color:#f44336">−5.9%</span></div>
+                  </div>
+                  <div class="bar-group">
+                    <div class="bars">
+                      <div class="bar ok" style="height:0" data-h="90"></div>
+                      <div class="bar nok" style="height:0" data-h="92"></div>
+                    </div>
+                    <div class="bar-label">COUNTER_USED_CH<br><span style="color:#4CAF50">+1.8%</span></div>
+                  </div>
+                  <div class="bar-group">
+                    <div class="bars">
+                      <div class="bar ok" style="height:0" data-h="85"></div>
+                      <div class="bar nok" style="height:0" data-h="85"></div>
+                    </div>
+                    <div class="bar-label">COUNTER_SLOT_CH<br><span style="color:#888">−0.05%</span></div>
+                  </div>
+                </div>
+                <p style="font-size:11px;color:#888;margin-top:12px">OK: BLD_000006 · NOK: BLD_000004 · 7×15min steady-state windows</p>
+              </div>
+            </div>
+
+            <!-- Comparing view -->
+            <div class="g5-panel" id="g5-comparing" style="display:none">
+              <div class="compare-btns">
+                <button class="p-btn p-btn-outlined loaded">Select Used SCF</button>
+                <button class="p-btn p-btn-outlined loaded">Select Golden configuration (.xlsm)</button>
+              </div>
+              <div class="isa_info">OK/NOK log groups loaded — TTI Trace compare ready</div>
+              <div class="item" style="min-height:160px">
+                <div class="handler"></div>
+                <div class="fieldset">
+                  <div class="fieldset-legend">TtiTrace Compare — Group A vs Group B</div>
+                  <div class="fieldset-body" style="font:12px Courier New,monospace;color:#333">
+                    Group A (OK):  2,847 events · 156ms span · 12 UEs<br>
+                    Group B (NOK): 2,801 events · 156ms span · 12 UEs<br>
+                    <span style="color:#f44336">Δ events: −46 (−1.6%) · scheduler-msg3 path divergence detected</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- L2Ps Trace placeholder -->
+            <div class="g5-panel" id="g5-l2ps" style="display:none">
+              <div class="open-row">
+                <span class="open-file">Open Files</span>
+                <span style="color:#888">|</span>
+                <span class="open-file">Open Folder</span>
+              </div>
+              <div class="item" style="min-height:240px">
+                <div class="handler"></div>
+                <div class="fieldset">
+                  <div class="fieldset-legend">TTI Trace Timeline</div>
+                  <div class="fieldset-body">
+                    <div id="trace-timeline" style="display:flex;gap:1px;height:36px;margin-top:8px"></div>
+                    <p style="font-size:11px;color:#888;margin-top:8px">2,847 events · Multi-UE scheduling · drag to zoom</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Other g5 panels placeholder -->
+            <div class="g5-panel" id="g5-other" style="display:none">
+              <div class="isa_info">Demo: switch to Snapshot / KPI Analyzer / Comparing / L2Ps Trace Analyzer for full views.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other app panels -->
+      <div class="tab-panel" id="panel-other">
+        <div class="isa_info">Demo focuses on the <b>5G</b> tab. In production, LTE / RF / eCPRI / CRM / AirPhone / MSI / Troubleshooting are also available.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IDE Extension demo (separate window — NOT part of UP-Analyzer UI) -->
+  <div class="ide-overlay" id="ide-overlay">
+    <div class="ide-window">
+      <div class="ide-titlebar">
+        <span>Cursor — Agent Chat (UP-Analyzer Extension Demo)</span>
+        <button class="ide-close" onclick="hideIdeDemo()">✕</button>
+      </div>
+      <div class="ide-body">
+        <div class="ide-sidebar"><span>📁</span><span>🔍</span><span>🤖</span></div>
+        <div class="ide-main">
+          <div class="ide-tabs">
+            <div class="ide-tab">code.cpp</div>
+            <div class="ide-tab active">Agent</div>
+          </div>
+          <div class="ide-chat">
+            <div class="ide-msg user">&gt; /upa-status</div>
+            <div class="ide-msg agent">
+              Reading <code>~/.config/UP-Analyzer/parser_servers/42805.json</code><br>
+              <code>curl --noproxy '*' -s "http://127.0.0.1:4821/_upa/parsed_modules?ai=cursor"</code><br><br>
+              ✓ 1 reachable instance · 38 parsed modules
+            </div>
+            <div class="ide-msg user">&gt; Compare COUNTER_AVAIL_CH between OK and NOK logs</div>
+            <div class="ide-msg agent">
+              OK: 568,425,464 · NOK: 534,669,170 · <span style="color:#f48771">Δ −5.94%</span><br>
+              COUNTER_SLOT_CH flat (−0.05%) → suggests <b>invocation gap</b>, not computation gap.<br><br>
+              &gt; /upa-pr-investigate ISSUE-001<br>
+              Stage A ✓ → B ✓ → C ✓ → D ✓ → E: <span style="color:#4ec9b0">HOLDS</span><br>
+              Candidate: <code>abc123def456</code> [CHG-0042]
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const FILE_COLORS = ['#FFCCCC','#CCFFCC','#CCCCFF','#FFFFCC','#FFCCFF','#CCFFFF'];
+    const SYNTHETIC_FILES = [
+      'C:/demo/SITE-001_R3.2.1_BLD_000004/snapshot.zip',
+      'C:/demo/SITE-001_R3.2.1_BLD_000004/L2_ProtocolStack/',
+      'C:/demo/SITE-001_R3.2.1_BLD_000004/L3_ControlPlane/',
+      'C:/demo/SITE-001_R3.2.1_BLD_000004/Syslog/',
+    ];
+
+    // App-level tab switching
+    document.querySelectorAll('#app-tab-list .tab-list-item').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#app-tab-list .tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+        tab.classList.add('tab-list-active');
+        const is5g = tab.dataset.app === '5g';
+        document.getElementById('panel-5g').classList.toggle('active', is5g);
+        document.getElementById('panel-other').classList.toggle('active', !is5g);
+      });
+    });
+
+    // 5G sub-tab switching
+    const G5_VIEWS = {
+      snapshot: 'g5-snapshot',
+      kpi: 'g5-kpi',
+      comparing: 'g5-comparing',
+      l2ps: 'g5-l2ps',
+    };
+    document.querySelectorAll('#g5-tab-list .tab-list-item').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#g5-tab-list .tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+        tab.classList.add('tab-list-active');
+        const key = tab.dataset.g5;
+        document.querySelectorAll('.g5-panel').forEach(p => p.style.display = 'none');
+        const viewId = G5_VIEWS[key] || 'g5-other';
+        document.getElementById(viewId).style.display = 'block';
+        if (key === 'kpi') animateKpiBars();
+        if (key === 'l2ps') renderTraceTimeline();
+      });
+    });
+
+    function simulateLoad() {
+      const spinner = document.getElementById('spinner');
+      const filesBlock = document.getElementById('files-block');
+      const fileList = document.getElementById('file-list');
+      spinner.classList.add('show');
+      setTimeout(() => {
+        spinner.classList.remove('show');
+        filesBlock.style.display = 'block';
+        fileList.innerHTML = SYNTHETIC_FILES.map((f, i) =>
+          `<span class="colored-filename" style="background:${FILE_COLORS[i % FILE_COLORS.length]}">${i}:${f}</span><br>`
+        ).join('');
+      }, 1200);
+    }
+
+    function animateKpiBars() {
+      document.querySelectorAll('#kpi-bars .bar').forEach(b => {
+        setTimeout(() => { b.style.height = b.dataset.h + 'px'; }, 80);
+      });
+    }
+
+    function renderTraceTimeline() {
+      const el = document.getElementById('trace-timeline');
+      if (el.children.length) return;
+      const colors = ['#2196F3','#4CAF50','#FF9800','#9C27B0','#f44336','#00BCD4'];
+      for (let i = 0; i < 80; i++) {
+        const b = document.createElement('div');
+        b.style.cssText = `flex:1;background:${colors[i % colors.length]};opacity:${0.3 + Math.random() * 0.7};min-height:${8 + Math.random() * 28}px;align-self:flex-end`;
+        el.appendChild(b);
+      }
+    }
+
+    function showIdeDemo() { document.getElementById('ide-overlay').classList.add('show'); }
+    function hideIdeDemo() { document.getElementById('ide-overlay').classList.remove('show'); }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hideIdeDemo(); });
+
+    // Auto-demo for video: cycle 5G tabs
+  function autoDemo() {
+    const sequence = ['snapshot', 'kpi', 'comparing', 'l2ps'];
+    let i = 0;
+    function next() {
+      if (i === 0) simulateLoad();
+      const tab = document.querySelector(`#g5-tab-list [data-g5="${sequence[i]}"]`);
+      if (tab) tab.click();
+      i = (i + 1) % sequence.length;
+      if (i === 0) setTimeout(() => { showIdeDemo(); setTimeout(hideIdeDemo, 4000); }, 2500);
+      setTimeout(next, 3500);
+    }
+    setTimeout(next, 1000);
+  }
+  // Uncomment for hands-free recording:
+  // autoDemo();
+  </script>
+</body>
+</html>

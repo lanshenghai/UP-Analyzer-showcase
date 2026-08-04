@@ -38,7 +38,7 @@ The platform evolved over **8 years** from a personal Python script into:
 | [Recording Guide](docs/recording-guide.md) | OBS setup, desensitization steps, export settings |
 | [AI Investigation Overview](docs/ai-investigation.md) | Staged gate workflow for automated root-cause analysis |
 | [Sample Report](examples/sample-investigation-report.md) | Desensitized end-to-end investigation example |
-| [Interactive Mock](demo/index.html) | Browser-based UI mock for screenshots and demo B-roll |
+| [Interactive Mock](https://lanshenghai.github.io/UP-Analyzer-showcase/) | Browser-based UI mock for screenshots and demo B-roll |
 
 ---
 
@@ -120,6 +120,8 @@ Upload to Bilibili / YouTube and link here:
 <!-- Replace with your video URL after recording -->
 🎬 Demo video: (pending — see docs/recording-guide.md)
 ```
+
+**Live demo:** https://lanshenghai.github.io/UP-Analyzer-showcase/
 
 ---
 

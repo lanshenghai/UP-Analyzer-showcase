@@ -78,6 +78,9 @@
     .view-panel.active { display: flex; }
     .g5-panel { width: 100%; }
     #g5-l2ps .inner-tab-list > .tab-list { position: relative; z-index: 4; background: #fff; flex-shrink: 0; }
+    #g5-l2ps .l2ps-body, #g5-l2ps .rach-sub-tabs, #g5-l2ps .l2ps-sub-tabs { width: 100%; }
+    #g5-l2ps .rach-sub-body, #g5-l2ps .l2ps-sub-body { width: 100%; min-height: 120px; }
+    .rach-sub-tabs .tab-list-item { font-size: 10px; height: 18px; padding: 1px 0.35em; }
 
     .open-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
     .open-file {
@@ -232,11 +235,11 @@
     .range-bar-tick {
       position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed #e53935;
     }
-    .stats-block { margin: 6px 4px 12px; }
+    .stats-block { margin: 6px 4px 12px; width: 100%; }
     .stats-title { font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 4px; font-family: Verdana, sans-serif; }
-    .stats-scroll { overflow: auto; }
-    .stats-heatmap { border-collapse: collapse; font-size: 9px; font-family: Verdana, sans-serif; }
-    .stats-heatmap th, .stats-heatmap td { border: 1px solid #bbb; padding: 1px 3px; text-align: center; min-width: 26px; height: 14px; }
+    .stats-scroll { overflow: auto; width: 100%; }
+    .stats-heatmap { border-collapse: collapse; font-size: 9px; font-family: Verdana, sans-serif; width: 100%; max-width: 100%; }
+    .stats-heatmap th, .stats-heatmap td { border: 1px solid #bbb; padding: 1px 3px; text-align: center; min-width: 26px; height: 16px; }
     .stats-heatmap th { background: #f4f4f4; font-weight: normal; }
     .stats-heatmap td.cell-high { color: #fff; font-size: 8px; }
     .stats-heatmap td.cell-low { background: #f8f8f8 !important; color: #444; }
@@ -575,17 +578,20 @@
 
     function rachCell(seed, r, c, mode) {
       const hash = (seed + r * 13 + c * 29) % 100;
-      if (hash < 52) return { disp: '', norm: 0, cls: 'cell-empty', num: 0 };
+      if (hash < 58) return { disp: '', norm: 0, cls: 'cell-empty', num: 0 };
       if (mode === 'power') {
-        const disp = (-118 + (hash % 26)).toFixed(1);
-        return { disp, norm: 0.45 + hash / 180, cls: 'cell-high', num: parseFloat(disp) };
+        const val = -118 + (hash % 26);
+        const showNum = hash % 5 === 0;
+        return { disp: showNum ? val.toFixed(1) : '', norm: 0.45 + hash / 180, cls: showNum ? 'cell-low' : 'cell-high', num: val };
       }
       if (mode === 'ta') {
-        const disp = String(hash % 160);
-        return { disp, norm: 0.35 + hash / 140, cls: hash % 4 === 0 ? 'cell-mid' : 'cell-high', num: parseFloat(disp) };
+        const val = hash % 160;
+        const showNum = hash % 6 === 0;
+        return { disp: showNum ? String(val) : '', norm: 0.35 + hash / 140, cls: hash % 4 === 0 ? 'cell-mid' : 'cell-high', num: val };
       }
-      const disp = String(1 + (hash % 7));
-      return { disp, norm: 0.55 + hash / 110, cls: 'cell-high', num: parseFloat(disp) };
+      const val = 1 + (hash % 7);
+      const showNum = hash % 4 === 0;
+      return { disp: showNum ? String(val) : '', norm: 0.55 + hash / 110, cls: 'cell-high', num: val };
     }
 
     function rachStatsTable(title, seed, mode) {

@@ -6,7 +6,6 @@
   <title>UP-Analyzer</title>
   <link rel="icon" href="assets/icon.png">
   <style>
-    /* Matched to UP-Analyzer src/tabs/styles.css + src/index.css */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       height: 100%;
@@ -19,220 +18,86 @@
     body { margin: 8px; display: flex; flex-direction: column; }
 
     .demo-strip {
-      background: #FEEFB3;
-      color: #9F6000;
-      font-size: 11px;
-      text-align: center;
-      padding: 3px;
-      margin: -8px -8px 4px;
-      border-bottom: 1px solid #e6c200;
+      background: #FEEFB3; color: #9F6000; font-size: 11px; text-align: center;
+      padding: 3px; margin: -8px -8px 4px; border-bottom: 1px solid #e6c200;
     }
 
-    .app-header {
-      position: relative;
-      min-height: 28px;
-      margin-bottom: 3px;
-    }
+    .app-header { position: relative; min-height: 28px; margin-bottom: 3px; }
     .version {
-      position: absolute;
-      top: 5px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: inherit;
-      z-index: 1;
+      position: absolute; top: 5px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 8px; z-index: 1;
     }
-    .version label { font-size: inherit; }
-    .whats-new {
-      font-size: 12px;
-      color: #124191;
-      text-decoration: underline;
-      cursor: pointer;
-    }
+    .whats-new { font-size: 12px; color: #124191; text-decoration: underline; cursor: pointer; }
     .top-right {
-      position: absolute;
-      right: 10px;
-      top: 0;
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      transform: translateY(-4px);
-      z-index: 2;
+      position: absolute; right: 10px; top: 0; display: flex; align-items: center;
+      gap: 2px; transform: translateY(-4px); z-index: 2;
     }
     .search-box {
-      border: 1px solid #ced4da;
-      border-radius: 3px;
-      padding: 2px 6px;
-      font-size: 12px;
-      width: 120px;
-      height: 22px;
+      border: 1px solid #ced4da; border-radius: 3px; padding: 2px 6px;
+      font-size: 12px; width: 120px; height: 22px;
     }
     .p-btn {
-      box-sizing: border-box;
-      min-height: 22px;
-      height: 22px;
-      padding: 0 0.45rem;
-      font-size: 12px;
-      border: 1px solid #3B82F6;
-      background: #3B82F6;
-      color: #fff;
-      border-radius: 3px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
+      box-sizing: border-box; min-height: 22px; height: 22px; padding: 0 0.45rem;
+      font-size: 12px; border: 1px solid #3B82F6; background: #3B82F6; color: #fff;
+      border-radius: 3px; cursor: pointer; display: inline-flex; align-items: center;
     }
     .p-btn:hover { background: #2563eb; }
-    .p-btn-outlined {
-      background: #fff;
-      color: #3B82F6;
-    }
+    .p-btn-outlined { background: #fff; color: #3B82F6; }
     .p-btn-outlined:hover { background: #eff6ff; }
+    .p-btn-outlined.loaded { background: lightgreen; }
 
-    /* tabs/styles.css */
     .tabs { display: flex; flex-direction: column; flex: 1; min-height: 0; }
     .tab-list {
-      border-bottom: 1px solid #2196F3;
-      padding-left: 0;
-      margin: 3px 0 0;
-      list-style: none;
-      white-space: nowrap;
-      overflow-x: auto;
+      border-bottom: 1px solid #2196F3; padding-left: 0; margin: 3px 0 0;
+      list-style: none; white-space: nowrap; overflow-x: auto;
     }
     .tab-list-item {
-      display: inline-block;
-      margin: 2px 0 -1px 3px;
-      border: 1px solid #2196F3;
-      padding: 3px 0.5em;
-      background: #DDE;
-      cursor: pointer;
-      font: bold 12px Verdana, sans-serif;
-      color: #448;
-      height: 23px;
-      user-select: none;
+      display: inline-block; margin: 2px 0 -1px 3px; border: 1px solid #2196F3;
+      padding: 3px 0.5em; background: #DDE; cursor: pointer;
+      font: bold 12px Verdana, sans-serif; color: #448; height: 23px; user-select: none;
     }
-    .tab-list-item:hover:not(.tab-list-active) {
-      color: #118df3;
-      background: #AAE;
-      border-color: #227;
-    }
-    .tab-list-item.tab-list-active {
-      background: white;
-      border-bottom: 1px solid white;
-    }
+    .tab-list-item:hover:not(.tab-list-active) { color: #118df3; background: #AAE; border-color: #227; }
+    .tab-list-item.tab-list-active { background: white; border-bottom: 1px solid white; }
     .tab-content {
-      border: 1px solid #2196F3;
-      border-top: none;
-      padding: 5px;
-      flex: 1;
-      overflow: auto;
-      position: relative;
-      min-height: 0;
-      background: #fff;
+      border: 1px solid #2196F3; border-top: none; padding: 5px; flex: 1;
+      overflow: auto; position: relative; min-height: 0; background: #fff;
     }
-    .tab-panel { display: none; height: 100%; }
-    .tab-panel.active { display: flex; flex-direction: column; }
+    .tab-panel { display: none; height: 100%; flex-direction: column; }
+    .tab-panel.active { display: flex; }
+    .view-panel { display: none; height: 100%; flex-direction: column; }
+    .view-panel.active { display: flex; }
 
-    /* ParentComp / SelectFiles */
-    .open-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 4px;
-      flex-wrap: wrap;
-    }
+    .open-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
     .open-file {
-      font-size: 14px;
-      font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
-      color: #0000ee;
-      text-decoration: underline;
-      cursor: pointer;
+      font-size: 14px; font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+      color: #0000ee; text-decoration: underline; cursor: pointer;
     }
-    .open-file:hover { color: #124191; }
-
-    .files-block {
-      position: relative;
-      margin-bottom: 6px;
-    }
-    .show-files {
-      font: normal 12px "Courier New", Courier, Monospace;
-      line-height: 1.4em;
-      word-break: break-all;
-    }
-    .colored-filename {
-      cursor: pointer;
-      padding: 0 2px;
-    }
-    .colored-filename:hover { text-decoration: underline; }
-
-    .tags {
-      display: flex;
-      position: absolute;
-      right: 10px;
-      top: 0;
-      gap: 5px;
-    }
+    .files-block { position: relative; margin-bottom: 6px; }
+    .show-files { font: normal 12px "Courier New", Courier, Monospace; line-height: 1.4em; word-break: break-all; }
+    .colored-filename { cursor: pointer; padding: 0 2px; }
+    .tags { display: flex; position: absolute; right: 10px; top: 0; gap: 5px; }
     .tag-string {
-      color: #fff;
-      background-color: #21d4f3;
-      border-radius: 3px;
-      padding: 0 4px;
-      font-weight: 700;
-      font-size: 11px;
+      color: #fff; background-color: #21d4f3; border-radius: 3px;
+      padding: 0 4px; font-weight: 700; font-size: 11px;
     }
 
-    /* fieldset / item */
     .item {
-      box-shadow: 2px 2px 1px #a6a6a6;
-      border: 1px solid #e6e6e6;
-      margin: 5px;
-      background: white;
-      flex: 1;
-      min-height: 200px;
-      display: flex;
-      flex-direction: column;
+      box-shadow: 2px 2px 1px #a6a6a6; border: 1px solid #e6e6e6; margin: 5px;
+      background: white; flex: 1; min-height: 120px; display: flex; flex-direction: column;
     }
-    .handler {
-      height: 8px;
-      cursor: move;
-      background-color: #d8ecf3;
-    }
+    .handler { height: 8px; cursor: move; background-color: #d8ecf3; }
     .fieldset {
-      border: 1px solid rgba(0, 242, 255, 0.3);
-      margin: 4px;
-      padding: 4px;
-      font-family: Verdana, Geneva, Tahoma, sans-serif;
-      font-size: smaller;
-      flex: 1;
+      border: 1px solid rgba(0, 242, 255, 0.3); margin: 4px; padding: 4px;
+      font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: smaller; flex: 1;
     }
-    .fieldset-legend {
-      padding: 2px 8px;
-      font-weight: bold;
-      font-size: 12px;
-      color: #333;
-    }
+    .fieldset-legend { padding: 2px 8px; font-weight: bold; font-size: 12px; color: #333; }
     .fieldset-body { padding: 8px; }
 
-    /* Cell mapping table mock */
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-      font-family: Verdana, sans-serif;
-    }
-    .data-table th, .data-table td {
-      border: 1px solid #ccc;
-      padding: 4px 8px;
-      text-align: left;
-    }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: Verdana, sans-serif; }
+    .data-table th, .data-table td { border: 1px solid #ccc; padding: 4px 8px; text-align: left; }
     .data-table th { background: #f4f4f4; }
 
-    /* KPI chart area */
-    .chart-area {
-      padding: 12px;
-      font-family: Verdana, sans-serif;
-    }
+    .chart-area { padding: 12px; font-family: Verdana, sans-serif; }
     .chart-title { font-weight: bold; font-size: 13px; margin-bottom: 12px; }
     .bar-row { display: flex; align-items: flex-end; gap: 32px; height: 180px; padding: 0 20px; }
     .bar-group { text-align: center; }
@@ -242,464 +107,126 @@
     .bar.nok { background: #f44336; }
     .bar-label { font-size: 11px; margin-top: 6px; color: #555; }
 
-    /* Comparing */
-    .compare-btns { margin-bottom: 10px; }
-    .compare-btns .p-btn-outlined.loaded { background: lightgreen; }
-
-    /* IDE overlay — separate window style */
-    .ide-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.35);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-    }
-    .ide-overlay.show { display: flex; }
-    .ide-window {
-      width: 92%;
-      max-width: 1100px;
-      height: 80%;
-      background: #1e1e1e;
-      border-radius: 6px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    }
-    .ide-titlebar {
-      background: #323233;
-      color: #ccc;
-      padding: 6px 12px;
-      font-size: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .ide-body { display: flex; flex: 1; overflow: hidden; }
-    .ide-sidebar {
-      width: 48px;
-      background: #252526;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 8px;
-      gap: 12px;
-      font-size: 20px;
-    }
-    .ide-main { flex: 1; display: flex; flex-direction: column; }
-    .ide-tabs {
-      background: #2d2d2d;
-      display: flex;
-      padding: 0 8px;
-      font-size: 12px;
-      color: #969696;
-    }
-    .ide-tab {
-      padding: 8px 16px;
-      border-top: 2px solid transparent;
-    }
-    .ide-tab.active {
-      color: #fff;
-      background: #1e1e1e;
-      border-top-color: #007acc;
-    }
-    .ide-chat {
-      flex: 1;
-      padding: 12px;
-      overflow-y: auto;
-      font-family: Consolas, monospace;
-      font-size: 12px;
-      color: #d4d4d4;
-    }
-    .ide-msg { margin-bottom: 12px; line-height: 1.5; }
-    .ide-msg.user { color: #9cdcfe; }
-    .ide-msg.agent { color: #ce9178; }
-    .ide-msg code { color: #b5cea8; background: #2d2d2d; padding: 1px 4px; }
-    .ide-close {
-      background: none;
-      border: none;
-      color: #ccc;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
     .isa_info {
-      margin: 6px 0;
-      padding: 8px 12px;
-      border-radius: 0.5em;
-      box-shadow: 1px 1px 3px #888;
-      color: #00529B;
-      background-color: #BDE5F8;
-      font-size: 12px;
+      margin: 6px 0; padding: 8px 12px; border-radius: 0.5em; box-shadow: 1px 1px 3px #888;
+      color: #00529B; background-color: #BDE5F8; font-size: 12px;
     }
-
     .spinner-mask {
-      display: none;
-      position: absolute;
-      inset: 0;
-      background: rgba(255,255,255,0.7);
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-      font: bold 13px Verdana, sans-serif;
-      color: #2196F3;
+      display: none; position: absolute; inset: 0; background: rgba(255,255,255,0.7);
+      align-items: center; justify-content: center; z-index: 50;
+      font: bold 13px Verdana, sans-serif; color: #2196F3;
     }
     .spinner-mask.show { display: flex; }
 
-    /* Log Browser overlay mock */
-    .lb-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.35);
-      z-index: 90;
-      align-items: center;
-      justify-content: center;
-    }
-    .lb-overlay.show { display: flex; }
-    .lb-window {
-      width: 88%;
-      max-width: 960px;
-      height: 72%;
-      background: #fff;
-      border-radius: 4px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    }
-    .lb-titlebar {
-      background: #f0f0f0;
-      padding: 6px 12px;
-      font-size: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #ccc;
-    }
-    .lb-toolbar {
-      padding: 6px 10px;
-      border-bottom: 1px solid #e0e0e0;
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      font-size: 12px;
-    }
-    .lb-filter {
-      flex: 1;
-      border: 1px solid #ced4da;
-      border-radius: 3px;
-      padding: 3px 8px;
-      font-family: Consolas, monospace;
-      font-size: 12px;
-    }
-    .lb-body {
-      flex: 1;
-      overflow: auto;
-      padding: 8px 12px;
-      font: 12px Consolas, monospace;
-      line-height: 1.5;
-      background: #fafafa;
-    }
-    .lb-hl { background: #fff3cd; }
-    .lb-tag {
-      font-size: 10px;
-      background: #e3f2fd;
-      color: #1565c0;
-      padding: 1px 5px;
-      border-radius: 2px;
-      margin-left: 6px;
-    }
-
-    /* L2Ps inner tabs */
     .inner-tab-list { margin-top: 4px; }
     .inner-tab-list .tab-list-item { font-size: 11px; height: 20px; padding: 2px 0.4em; }
     .rule-hit { color: #c62828; }
     .rule-ok { color: #2e7d32; }
+    .mono { font: 12px Consolas, "Courier New", monospace; line-height: 1.55; }
+
+    /* visual mocks */
+    .heatmap {
+      display: grid; grid-template-columns: repeat(14, 1fr); gap: 2px; max-width: 420px;
+    }
+    .heatmap span {
+      aspect-ratio: 1; border-radius: 2px; min-width: 18px;
+    }
+    .sparkline { display: flex; align-items: flex-end; gap: 2px; height: 48px; margin-top: 8px; }
+    .sparkline i {
+      flex: 1; background: #2196F3; border-radius: 1px 1px 0 0; min-width: 4px;
+    }
+    .beam-grid {
+      display: grid; grid-template-columns: repeat(8, 28px); gap: 3px; margin-top: 8px;
+    }
+    .beam-cell {
+      width: 28px; height: 28px; border-radius: 3px; font-size: 9px;
+      display: flex; align-items: center; justify-content: center; color: #fff;
+    }
+    .pcap-list { max-height: 200px; overflow: auto; }
+    .link-list { font-size: 13px; line-height: 1.8; padding: 8px 16px; }
+    .link-list h3 { font-size: 14px; margin: 12px 0 6px; color: #124191; }
+    .link-list a { color: #0000ee; }
+
+    /* overlays */
+    .lb-overlay, .ide-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+      z-index: 90; align-items: center; justify-content: center;
+    }
+    .lb-overlay.show, .ide-overlay.show { display: flex; z-index: 100; }
+    .lb-window {
+      width: 88%; max-width: 960px; height: 72%; background: #fff; border-radius: 4px;
+      overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .lb-titlebar {
+      background: #f0f0f0; padding: 6px 12px; font-size: 12px;
+      display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc;
+    }
+    .lb-toolbar { padding: 6px 10px; border-bottom: 1px solid #e0e0e0; display: flex; gap: 6px; align-items: center; font-size: 12px; }
+    .lb-filter { flex: 1; border: 1px solid #ced4da; border-radius: 3px; padding: 3px 8px; font-family: Consolas, monospace; font-size: 12px; }
+    .lb-body { flex: 1; overflow: auto; padding: 8px 12px; font: 12px Consolas, monospace; line-height: 1.5; background: #fafafa; }
+    .lb-hl { background: #fff3cd; }
+    .ide-window {
+      width: 92%; max-width: 1100px; height: 80%; background: #1e1e1e; border-radius: 6px;
+      overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .ide-titlebar { background: #323233; color: #ccc; padding: 6px 12px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .ide-body { display: flex; flex: 1; overflow: hidden; }
+    .ide-sidebar { width: 48px; background: #252526; display: flex; flex-direction: column; align-items: center; padding-top: 8px; gap: 12px; font-size: 20px; }
+    .ide-main { flex: 1; display: flex; flex-direction: column; }
+    .ide-tabs { background: #2d2d2d; display: flex; padding: 0 8px; font-size: 12px; color: #969696; }
+    .ide-tab { padding: 8px 16px; border-top: 2px solid transparent; }
+    .ide-tab.active { color: #fff; background: #1e1e1e; border-top-color: #007acc; }
+    .ide-chat { flex: 1; padding: 12px; overflow-y: auto; font-family: Consolas, monospace; font-size: 12px; color: #d4d4d4; }
+    .ide-msg { margin-bottom: 12px; line-height: 1.5; }
+    .ide-msg.user { color: #9cdcfe; }
+    .ide-msg.agent { color: #ce9178; }
+    .ide-msg code { color: #b5cea8; background: #2d2d2d; padding: 1px 4px; }
+    .ide-close { background: none; border: none; color: #ccc; cursor: pointer; font-size: 16px; }
   </style>
 </head>
 <body>
-  <div class="demo-strip">
-    ⚠️ 脱敏演示页 — 界面样式对齐真实 UP-Analyzer，数据均为虚构。按 Esc 关闭弹窗。
-    <a href="up-analyzer-extra.html" style="margin-left:12px;color:#0969da;text-decoration:underline">插件生态说明</a>
-    <a href="index.html" style="margin-left:8px;color:#0969da;text-decoration:underline">← 文档首页</a>
-  </div>
+  <div class="demo-strip">⚠️ 脱敏交互演示 — 界面与 Tab 结构对齐真实 UP-Analyzer，数据均为虚构。按 Esc 关闭弹窗。</div>
 
   <div class="app-header">
-    <div class="version">
-      <label>v12.1.1</label>
-      <span class="whats-new">更新说明</span>
-    </div>
+    <div class="version"><label>v12.1.1</label><span class="whats-new">更新说明</span></div>
     <div class="top-right">
       <input class="search-box" placeholder="搜索…" readonly>
-      <button class="p-btn" onclick="showLogBrowser()" title="minilogbrowser 插件">LogBrowser</button>
+      <button class="p-btn" onclick="showLogBrowser()">LogBrowser</button>
       <button class="p-btn">TtiTraceHelper</button>
       <button class="p-btn">帮助</button>
-      <button class="p-btn p-btn-outlined" onclick="showIdeDemo()" title="演示 IDE 插件（独立窗口）">IDE 演示</button>
+      <button class="p-btn p-btn-outlined" onclick="showIdeDemo()">IDE 演示</button>
     </div>
   </div>
 
-  <!-- App-level tabs: App.js -->
   <div class="tabs" id="app-tabs">
-    <ol class="tab-list" id="app-tab-list">
-      <li class="tab-list-item" data-app="lte">LTE</li>
-      <li class="tab-list-item tab-list-active" data-app="5g">5G</li>
-      <li class="tab-list-item" data-app="rf">RF</li>
-      <li class="tab-list-item" data-app="ecpri">eCPRI</li>
-      <li class="tab-list-item" data-app="crm">CRM</li>
-      <li class="tab-list-item" data-app="airphone">AirPhone</li>
-      <li class="tab-list-item" data-app="msi">MSI</li>
-      <li class="tab-list-item" data-app="tools">🔧 Troubleshooting</li>
-    </ol>
-
-    <div class="tab-content">
-      <!-- ========== 5G panel ========== -->
-      <div class="tab-panel active" id="panel-5g">
-        <!-- G5.js sub-tabs -->
-        <div class="tabs" id="g5-tabs">
-          <ol class="tab-list" id="g5-tab-list">
-            <li class="tab-list-item" data-g5="l1hb">L1 HB Analyzer</li>
-            <li class="tab-list-item" data-g5="syslog">Syslog Analyzer</li>
-            <li class="tab-list-item" data-g5="l2ps">L2Ps Trace Analyzer</li>
-            <li class="tab-list-item" data-g5="l2lo">L2Lo Trace Analyzer</li>
-            <li class="tab-list-item" data-g5="l2hidu">L2HiDu Trace Analyzer</li>
-            <li class="tab-list-item" data-g5="l2hicu">L2HiCu Trace Analyzer</li>
-            <li class="tab-list-item" data-g5="bip">Bip log Analyzer</li>
-            <li class="tab-list-item" data-g5="timemarker">L2Rt TimeMarker</li>
-            <li class="tab-list-item" data-g5="kpi">KPI Analyzer</li>
-            <li class="tab-list-item tab-list-active" data-g5="snapshot">Snapshot</li>
-            <li class="tab-list-item" data-g5="longterm">LongtermKPI</li>
-            <li class="tab-list-item" data-g5="comparing">Comparing</li>
-          </ol>
-
-          <div class="tab-content" style="position:relative">
-            <div class="spinner-mask" id="spinner"><span>解析中…</span></div>
-
-            <!-- Snapshot view -->
-            <div class="g5-panel active" id="g5-snapshot">
-              <div class="open-row">
-                <span class="open-file" onclick="simulateLoad()">打开文件</span>
-                <span style="color:#888">|</span>
-                <span class="open-file" onclick="simulateLoad()">打开文件夹</span>
-              </div>
-              <div class="files-block" id="files-block" style="display:none">
-                <div class="tags">
-                  <span class="tag-string" id="tag-version">SwVersion: R3.2.1_BLD_000004</span>
-                  <span class="tag-string">SnapshotTime: 2026-03-04 12:00:00</span>
-                </div>
-                <div class="show-files" id="file-list"></div>
-              </div>
-
-              <!-- Inner Snapshot tabs -->
-              <div class="tabs" style="margin-top:8px;flex:1" id="snap-tabs">
-                <ol class="tab-list">
-                  <li class="tab-list-item tab-list-active" data-snap="cell">CellMapping</li>
-                  <li class="tab-list-item" data-snap="syslog">Syslog</li>
-                  <li class="tab-list-item" data-snap="kpi">KPI</li>
-                  <li class="tab-list-item" data-snap="l2ps">L2Ps Trace</li>
-                  <li class="tab-list-item" data-snap="build">Build Info</li>
-                </ol>
-                <div class="tab-content">
-                  <div class="item">
-                    <div class="handler"></div>
-                    <div class="fieldset">
-                      <div class="fieldset-legend">小区映射</div>
-                      <div class="fieldset-body">
-                        <table class="data-table">
-                          <tr><th>小区 ID</th><th>lcrId</th><th>频段</th><th>PCI</th><th>状态</th></tr>
-                          <tr><td>NRCELL-111</td><td>111</td><td>n78</td><td>111</td><td>激活</td></tr>
-                          <tr><td>NRCELL-112</td><td>112</td><td>n78</td><td>112</td><td>激活</td></tr>
-                          <tr><td>NRCELL-113</td><td>113</td><td>n78</td><td>113</td><td>未激活</td></tr>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- KPI Analyzer view -->
-            <div class="g5-panel" id="g5-kpi" style="display:none">
-              <div class="open-row">
-                <span class="open-file">打开文件</span>
-                <span style="color:#888">|</span>
-                <span class="open-file">打开文件夹</span>
-              </div>
-              <div class="isa_info">已加载：合成 KPI 报告 — OK 与 NOK 对比（计数器定义由 <b>PMAT</b> 按 Release 自动转换）</div>
-              <div class="chart-area">
-                <div class="chart-title">PM 计数器对比 — NRCELL-111</div>
-                <div class="bar-row" id="kpi-bars">
-                  <div class="bar-group">
-                    <div class="bars">
-                      <div class="bar ok" style="height:0" data-h="120"></div>
-                      <div class="bar nok" style="height:0" data-h="113"></div>
-                    </div>
-                    <div class="bar-label">COUNTER_AVAIL_CH<br><span style="color:#f44336">−5.9%</span></div>
-                  </div>
-                  <div class="bar-group">
-                    <div class="bars">
-                      <div class="bar ok" style="height:0" data-h="90"></div>
-                      <div class="bar nok" style="height:0" data-h="92"></div>
-                    </div>
-                    <div class="bar-label">COUNTER_USED_CH<br><span style="color:#4CAF50">+1.8%</span></div>
-                  </div>
-                  <div class="bar-group">
-                    <div class="bars">
-                      <div class="bar ok" style="height:0" data-h="85"></div>
-                      <div class="bar nok" style="height:0" data-h="85"></div>
-                    </div>
-                    <div class="bar-label">COUNTER_SLOT_CH<br><span style="color:#888">−0.05%</span></div>
-                  </div>
-                </div>
-                <p style="font-size:11px;color:#888;margin-top:12px">OK：BLD_000006 · NOK：BLD_000004 · 7×15 分钟稳态窗口</p>
-              </div>
-            </div>
-
-            <!-- Comparing view -->
-            <div class="g5-panel" id="g5-comparing" style="display:none">
-              <div class="compare-btns">
-                <button class="p-btn p-btn-outlined loaded">选择 Used SCF</button>
-                <button class="p-btn p-btn-outlined loaded">选择 Golden 配置（.xlsm）</button>
-              </div>
-              <div class="isa_info">SCF 差异检查（<b>nidd_check</b>）— 已对比 Used vs Golden，发现 3 处偏离 NIDD 默认值</div>
-              <div class="item" style="min-height:120px;margin-bottom:6px">
-                <div class="handler"></div>
-                <div class="fieldset">
-                  <div class="fieldset-legend">SCF 配置差异 — NRCELL-111</div>
-                  <div class="fieldset-body" style="font:12px Courier New,monospace;color:#333">
-                    <span class="rule-hit">Δ</span> NRCELL-111#actDlMuMimo → Used: <b>true</b> · Golden: <b>false</b> · Feature: CB008765<br>
-                    <span class="rule-hit">Δ</span> NRCELL-111#pdcchAggLevel → Used: <b>4</b> · Default: <b>2</b><br>
-                    <span class="rule-ok">✓</span> 其余 1,247 项参数与 Golden 一致
-                  </div>
-                </div>
-              </div>
-              <div class="isa_info">OK/NOK 日志组已加载 — 可进行 TTI Trace 对比</div>
-              <div class="item" style="min-height:160px">
-                <div class="handler"></div>
-                <div class="fieldset">
-                  <div class="fieldset-legend">TtiTrace 对比 — A 组 vs B 组</div>
-                  <div class="fieldset-body" style="font:12px Courier New,monospace;color:#333">
-                    A 组（OK）：2,847 事件 · 156ms 跨度 · 12 UE<br>
-                    B 组（NOK）：2,801 事件 · 156ms 跨度 · 12 UE<br>
-                    <span style="color:#f44336">Δ 事件：−46（−1.6%）· 检测到 scheduler-msg3 路径分歧</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- L2Ps Trace -->
-            <div class="g5-panel" id="g5-l2ps" style="display:none">
-              <div class="open-row">
-                <span class="open-file">打开文件</span>
-                <span style="color:#888">|</span>
-                <span class="open-file">打开文件夹</span>
-              </div>
-              <div class="tabs inner-tab-list" id="l2ps-tabs">
-                <ol class="tab-list">
-                  <li class="tab-list-item tab-list-active" data-l2ps="timeline">Scheduling</li>
-                  <li class="tab-list-item" data-l2ps="auto">AutoAnalyzer</li>
-                </ol>
-                <div class="tab-content" style="border:none;padding:0">
-                  <div class="l2ps-panel active" id="l2ps-timeline">
-                    <div class="item" style="min-height:200px">
-                      <div class="handler"></div>
-                      <div class="fieldset">
-                        <div class="fieldset-legend">TTI Trace 时间轴</div>
-                        <div class="fieldset-body">
-                          <div id="trace-timeline" style="display:flex;gap:1px;height:36px;margin-top:8px"></div>
-                          <p style="font-size:11px;color:#888;margin-top:8px">2,847 事件 · 多 UE 调度 · 拖拽缩放</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="l2ps-panel" id="l2ps-auto" style="display:none">
-                    <div class="isa_info">规则引擎（<b>tti_trace_reminder</b>）— 按 1s 时间窗扫描 TTI Trace</div>
-                    <div class="item" style="min-height:200px">
-                      <div class="handler"></div>
-                      <div class="fieldset">
-                        <div class="fieldset-legend">AutoAnalyzer 规则命中</div>
-                        <div class="fieldset-body" style="font:12px Courier New,monospace;color:#333;line-height:1.6">
-                          (1024:3 - 1024:7) <span class="rule-hit">[UE-42] DL grant 连续 3 slot 缺失 → 疑似 HARQ 停滞</span><br>
-                          (1024:5 - 1024:6) <span class="rule-hit">[Cell-111] PDCCH CCE 利用率 &gt; 85% 持续 2 slot</span><br>
-                          (1025:0 - 1025:4) <span class="rule-ok">Cell-112 UL PRB 利用率正常</span><br>
-                          <span style="color:#888">— 共扫描 2,847 事件 · 2 条告警 · 1 条信息</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Other g5 panels placeholder -->
-            <div class="g5-panel" id="g5-other" style="display:none">
-              <div class="isa_info">演示提示：请切换到 Snapshot / KPI Analyzer / Comparing / L2Ps Trace Analyzer 查看完整视图。</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Other app panels -->
-      <div class="tab-panel" id="panel-other">
-        <div class="isa_info">本演示聚焦 <b>5G</b> Tab。生产环境中还提供 LTE / RF / eCPRI / CRM / AirPhone / MSI / Troubleshooting。</div>
-      </div>
-    </div>
+    <ol class="tab-list" id="app-tab-list"></ol>
+    <div class="tab-content" id="app-panels"></div>
   </div>
 
-  <!-- Log Browser mock (minilogbrowser plugin) -->
   <div class="lb-overlay" id="lb-overlay">
     <div class="lb-window">
-      <div class="lb-titlebar">
-        <span>Log Browser Lite <span class="lb-tag">minilogbrowser</span></span>
-        <button class="ide-close" onclick="hideLogBrowser()" style="color:#333">✕</button>
-      </div>
-      <div class="lb-toolbar">
-        <span>过滤：</span>
-        <input class="lb-filter" value="ERROR|WARN|calibration" readonly>
-        <button class="p-btn" style="font-size:11px">搜索</button>
-      </div>
-      <div class="lb-body">
-        <span style="color:#888">2026-03-04 12:00:01.234</span> [INFO] RMOD_L-1 calibration session started<br>
-        <span style="color:#888">2026-03-04 12:00:02.891</span> [INFO] <span class="lb-hl">calibration</span> RX chain 1: beamformingSubbandIdx=3<br>
-        <span style="color:#888">2026-03-04 12:00:03.102</span> <span class="lb-hl" style="color:#c62828">[WARN]</span> <span class="lb-hl">calibration</span> historyLog frame 1024 slot 5: retry count=2<br>
-        <span style="color:#888">2026-03-04 12:00:04.556</span> <span class="lb-hl" style="color:#c62828">[ERROR]</span> bfcali decoder: unexpected magic 0xaabbcce3<br>
-        <span style="color:#888">2026-03-04 12:00:05.001</span> [INFO] <span class="lb-hl">calibration</span> completed for RMOD_L-1<br>
-        <span style="color:#888;margin-top:8px;display:block">— 演示数据 · 真实插件支持正则过滤、书签、多文件 Tab</span>
+      <div class="lb-titlebar"><span>Log Browser Lite</span><button class="ide-close" onclick="hideLogBrowser()" style="color:#333">✕</button></div>
+      <div class="lb-toolbar"><span>过滤：</span><input class="lb-filter" value="ERROR|WARN|L2_PS" readonly><button class="p-btn" style="font-size:11px">搜索</button></div>
+      <div class="lb-body mono">
+        <span style="color:#888">12:00:01</span> [INFO] L2_PS scheduler init OK<br>
+        <span style="color:#888">12:00:02</span> <span class="lb-hl" style="color:#c62828">[WARN]</span> <span class="lb-hl">L2_PS</span> UE-42 HARQ NACK x3<br>
+        <span style="color:#888">12:00:03</span> <span class="lb-hl" style="color:#c62828">[ERROR]</span> <span class="lb-hl">L2_PS</span> PDCCH CCE pool exhausted<br>
       </div>
     </div>
   </div>
 
-  <!-- IDE Extension demo (separate window — NOT part of UP-Analyzer UI) -->
   <div class="ide-overlay" id="ide-overlay">
     <div class="ide-window">
-      <div class="ide-titlebar">
-        <span>Cursor — Agent 对话（UP-Analyzer 插件演示）</span>
-        <button class="ide-close" onclick="hideIdeDemo()">✕</button>
-      </div>
+      <div class="ide-titlebar"><span>Cursor — UP-Analyzer 插件</span><button class="ide-close" onclick="hideIdeDemo()">✕</button></div>
       <div class="ide-body">
         <div class="ide-sidebar"><span>📁</span><span>🔍</span><span>🤖</span></div>
         <div class="ide-main">
-          <div class="ide-tabs">
-            <div class="ide-tab">code.cpp</div>
-            <div class="ide-tab active">智能体</div>
-          </div>
+          <div class="ide-tabs"><div class="ide-tab">code.cpp</div><div class="ide-tab active">智能体</div></div>
           <div class="ide-chat">
             <div class="ide-msg user">&gt; /upa-status</div>
-            <div class="ide-msg agent">
-              正在读取 <code>~/.config/UP-Analyzer/parser_servers/42805.json</code><br>
-              <code>curl --noproxy '*' -s "http://127.0.0.1:4821/_upa/parsed_modules?ai=cursor"</code><br><br>
-              ✓ 1 个可达实例 · 38 个已解析模块
-            </div>
-            <div class="ide-msg user">&gt; 对比 OK 与 NOK 日志中的 COUNTER_AVAIL_CH</div>
-            <div class="ide-msg agent">
-              OK：568,425,464 · NOK：534,669,170 · <span style="color:#f48771">Δ −5.94%</span><br>
-              COUNTER_SLOT_CH 持平（−0.05%）→ 倾向 <b>调用缺口</b>，而非计算缺口。<br><br>
-              &gt; /upa-pr-investigate ISSUE-001<br>
-              Stage A ✓ → B ✓ → C ✓ → D ✓ → E：<span style="color:#4ec9b0">HOLDS（成立）</span><br>
-              候选 commit：<code>abc123def456</code> [CHG-0042]
-            </div>
+            <div class="ide-msg agent">✓ 1 个可达实例 · 38 个已解析模块</div>
+            <div class="ide-msg user">&gt; 对比 COUNTER_AVAIL_CH</div>
+            <div class="ide-msg agent">OK：568,425,464 · NOK：534,669,170 · <span style="color:#f48771">Δ −5.94%</span></div>
           </div>
         </div>
       </div>
@@ -707,6 +234,7 @@
   </div>
 
   <script>
+  (function () {
     const FILE_COLORS = ['#FFCCCC','#CCFFCC','#CCCCFF','#FFFFCC','#FFCCFF','#CCFFFF'];
     const SYNTHETIC_FILES = [
       'C:/demo/SITE-001_R3.2.1_BLD_000004/snapshot.zip',
@@ -715,49 +243,365 @@
       'C:/demo/SITE-001_R3.2.1_BLD_000004/Syslog/',
     ];
 
-    // App-level tab switching
-    document.querySelectorAll('#app-tab-list .tab-list-item').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('#app-tab-list .tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
-        tab.classList.add('tab-list-active');
-        const is5g = tab.dataset.app === '5g';
-        document.getElementById('panel-5g').classList.toggle('active', is5g);
-        document.getElementById('panel-other').classList.toggle('active', !is5g);
-      });
-    });
+    function openRow() {
+      return '<div class="open-row"><span class="open-file" data-action="load">打开文件</span><span style="color:#888">|</span><span class="open-file" data-action="load">打开文件夹</span></div>';
+    }
+    function item(legend, body, minH) {
+      return '<div class="item" style="min-height:' + (minH || 140) + 'px"><div class="handler"></div><div class="fieldset"><div class="fieldset-legend">' + legend + '</div><div class="fieldset-body">' + body + '</div></div></div>';
+    }
+    function table(headers, rows) {
+      const th = headers.map(h => '<th>' + h + '</th>').join('');
+      const tr = rows.map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('');
+      return '<table class="data-table"><tr>' + th + '</tr>' + tr + '</table>';
+    }
+    function heatmap(cols, rows, fn) {
+      let h = '<div class="heatmap" style="grid-template-columns:repeat(' + cols + ',1fr)">';
+      for (let i = 0; i < cols * rows; i++) h += '<span style="background:' + fn(i) + '"></span>';
+      return h + '</div>';
+    }
+    function sparkline(heights) {
+      return '<div class="sparkline">' + heights.map(h => '<i style="height:' + h + '%"></i>').join('') + '</div>';
+    }
+    function beamGrid() {
+      const vals = [12,45,78,92,88,65,34,21, 18,52,81,95,90,70,40,25, 8,38,72,85,80,58,28,15, 5,22,48,60,55,42,18,10];
+      return '<div class="beam-grid">' + vals.map((v,i) => {
+        const c = 'hsl(210,' + v + '%,' + (35 + v*0.35) + '%)';
+        return '<div class="beam-cell" style="background:' + c + '">' + (i+1) + '</div>';
+      }).join('') + '</div>';
+    }
 
-    // 5G sub-tab switching
-    const G5_VIEWS = {
-      snapshot: 'g5-snapshot',
-      kpi: 'g5-kpi',
-      comparing: 'g5-comparing',
-      l2ps: 'g5-l2ps',
+    /* ── Snapshot inner views ── */
+    const SNAP_VIEWS = {
+      cell: item('CellMapping', table(['小区 ID','lcrId','频段','PCI','状态'], [
+        ['NRCELL-111','111','n78','111','激活'],['NRCELL-112','112','n78','112','激活'],['NRCELL-113','113','n78','113','未激活']
+      ])),
+      syslog: item('Syslog 摘要', '<div class="mono">[ERROR] L2_PS PDCCH CCE pool exhausted (cell 111)<br>[WARN] RF calibration retry on RMOD_L-1<br>[INFO] Snapshot captured 2026-03-04 12:00:00</div>'),
+      kpi: item('PM 计数器快照', table(['计数器','NRCELL-111','NRCELL-112'], [
+        ['COUNTER_AVAIL_CH','568,425,464','412,003,221'],['COUNTER_USED_CH','498,221,100','380,112,004'],['COUNTER_SLOT_CH','12,004,882','11,998,441']
+      ])),
+      l2ps: item('L2Ps Trace 文件', '<div class="mono">0:C:/demo/.../ttitrace_cell111.bin (2.4 MB)<br>1:C:/demo/.../ttitrace_cell112.bin (1.8 MB)</div>'),
+      build: item('Build Info', table(['组件','版本','构建号'], [
+        ['L2-PS','R3.2.1','BLD_000004'],['L1-HB','R3.2.1','BLD_000004'],['RF','R3.2.0','BLD_000398']
+      ])),
+      rf: item('RF Syslog — Calibration (bfcali)', '<div class="isa_info" style="margin-top:0">RMOD_L-1 · RX_1_200_371301 · 解码完成</div>' + table(['子带','幅度均值','相位(°)'], [
+        ['0','0.82','−12.4'],['1','0.79','−8.1'],['2','0.85','−15.2'],['3','0.81','−11.0']
+      ])),
+      webem: item('WebEM 在线预览', '<div style="border:1px solid #ccc;height:160px;background:linear-gradient(#f8f9fa,#e9ecef);display:flex;align-items:center;justify-content:center;color:#666;font-size:12px">ADMIN.html 嵌入预览 — 站点配置树 · NRCELL-111 参数页</div>'),
+      beam: item('SS Beam Info', beamGrid() + '<p style="font-size:11px;color:#888;margin-top:8px">32 波束 SS-RSRP 热力图（合成数据）</p>'),
     };
-    document.querySelectorAll('#g5-tab-list .tab-list-item').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('#g5-tab-list .tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
-        tab.classList.add('tab-list-active');
-        const key = tab.dataset.g5;
-        document.querySelectorAll('.g5-panel').forEach(p => p.style.display = 'none');
-        const viewId = G5_VIEWS[key] || 'g5-other';
-        document.getElementById(viewId).style.display = 'block';
-        if (key === 'kpi') animateKpiBars();
-        if (key === 'l2ps') renderTraceTimeline();
+
+    function snapshotPanel() {
+      const snapTabs = Object.keys(SNAP_VIEWS).map((k,i) =>
+        '<li class="tab-list-item' + (i===0?' tab-list-active':'') + '" data-snap="' + k + '">' +
+        ({cell:'CellMapping',syslog:'Syslog',kpi:'KPI',l2ps:'L2Ps Trace',build:'Build Info',rf:'RF Syslog',webem:'WebEM',beam:'SS BeamInfo'}[k]) + '</li>'
+      ).join('');
+      const bodies = Object.keys(SNAP_VIEWS).map((k,i) =>
+        '<div class="snap-body" data-snap-body="' + k + '" style="display:' + (i===0?'block':'none') + '">' + SNAP_VIEWS[k] + '</div>'
+      ).join('');
+      return '<div class="view-panel" data-view="snapshot">' + openRow() +
+        '<div class="files-block" id="files-block" style="display:none"><div class="tags"><span class="tag-string">SwVersion: R3.2.1_BLD_000004</span><span class="tag-string">SnapshotTime: 2026-03-04 12:00:00</span></div><div class="show-files" id="file-list"></div></div>' +
+        '<div class="tabs inner-tab-list" id="snap-tabs"><ol class="tab-list">' + snapTabs + '</ol><div class="tab-content">' + bodies + '</div></div></div>';
+    }
+
+    const L2PS_TABS = ['DL','UL','PDCCH','RACH','Scheduling','AutoAnalyzer','UE Table','PmCounter'];
+    function l2psPanel() {
+      const tabs = L2PS_TABS.map((t,i) => '<li class="tab-list-item' + (i===4?' tab-list-active':'') + '" data-l2ps="' + t + '">' + t + '</li>').join('');
+      const scheduling = item('Scheduling 时间轴', '<div id="trace-timeline" style="display:flex;gap:1px;height:40px;margin-top:4px"></div><p style="font-size:11px;color:#888;margin-top:6px">2,847 事件 · 12 UE · 拖拽缩放</p>', 180);
+      const auto = '<div class="isa_info" style="margin-top:0">AutoAnalyzer — 规则引擎扫描</div>' + item('规则命中', '<div class="mono"><span class="rule-hit">[UE-42] DL grant 连续 3 slot 缺失</span><br><span class="rule-hit">[Cell-111] PDCCH CCE &gt; 85%</span><br><span class="rule-ok">Cell-112 UL PRB 正常</span></div>');
+      const dl = item('DL PRB 分配', heatmap(14, 4, i => 'hsl(120,' + (40 + (i%14)*4) + '%,' + (45 + (i%7)*5) + '%)'));
+      const ul = item('UL PRB 分配', heatmap(14, 4, i => 'hsl(200,' + (35 + (i%10)*5) + '%,' + (50 + (i%6)*4) + '%)'));
+      const pdcch = item('PDCCH CCE 占用', sparkline([30,45,62,88,92,85,70,55,40,35,50,65,80,75,60,45]));
+      const bodies = {
+        DL: dl, UL: ul, PDCCH: pdcch, RACH: item('RACH 统计', table(['时隙','Msg1','Msg2','Msg3'], [['1024:3','4','4','3'],['1024:4','2','2','2'],['1024:5','6','5','5']])),
+        Scheduling: scheduling, AutoAnalyzer: auto,
+        'UE Table': item('UE 列表', table(['RNTI','C-RNTI','MCS DL','MCS UL','HARQ'], [['0x2A','17042','27','22','OK'],['0x2B','17043','24','20','NACK×2'],['0x2C','17044','28','24','OK']])),
+        PmCounter: item('PmCounter 趋势', sparkline([55,58,62,60,57,54,52,50,48,52,58,63,61,59,56,54]) + '<p style="font-size:11px;color:#888;margin-top:6px">dlUsedPrbAvg · 15 分钟窗口</p>'),
+      };
+      const bodyHtml = L2PS_TABS.map(t => '<div class="l2ps-body" data-l2ps-body="' + t + '" style="display:' + (t==='Scheduling'?'block':'none') + '">' + bodies[t] + '</div>').join('');
+      return '<div class="view-panel" data-view="l2ps">' + openRow() + '<div class="tabs inner-tab-list"><ol class="tab-list">' + tabs + '</ol><div class="tab-content" style="border:none;padding:0">' + bodyHtml + '</div></div></div>';
+    }
+
+    const COMP_TABS = ['SCF vs. SCF','SCF vs. Default','Used vs. Golden','RD Parameters','L2Ps TtiTrace','Source Commits'];
+    function comparingPanel() {
+      const tabs = COMP_TABS.map((t,i) => '<li class="tab-list-item' + (i===2?' tab-list-active':'') + '" data-comp="' + i + '">' + t + '</li>').join('');
+      const views = [
+        '<div class="compare-btns"><button class="p-btn p-btn-outlined loaded">Select First SCF</button><button class="p-btn p-btn-outlined loaded">Select Second SCF</button><button class="p-btn">Go</button></div>' + item('SCF 差异', '<div class="mono"><span class="rule-hit">Δ</span> NRCELL-111#maxUeDl — 256 vs 128</div>'),
+        openRow().replace('打开文件','Open SCF File') + item('与 NIDD 默认值对比', '<div class="mono">偏离默认值 7 项 · NRCELL-111: 4 · NRCELL-112: 3</div>'),
+        '<div class="compare-btns"><button class="p-btn p-btn-outlined loaded">Select Used SCF</button><button class="p-btn p-btn-outlined loaded">Select Golden (.xlsm)</button></div>' + item('Used vs Golden', '<div class="mono"><span class="rule-hit">Δ</span> actDlMuMimo: true vs false<br><span class="rule-ok">✓</span> 1,247 项一致</div>'),
+        '<div class="compare-btns"><button class="p-btn p-btn-outlined loaded">Select First Snapshot</button><button class="p-btn p-btn-outlined loaded">Select Second Snapshot</button></div>' + item('RD Parameters', table(['RD 参数','版本 A','版本 B'], [['rdUlSrsLogMask','1','0'],['rdDlSrsLogControl','1','1']])),
+        '<div class="isa_info" style="margin-top:0">REF vs NOK — load-control metrics</div>' + item('TtiTrace 对比', '<div class="mono">ulLoadControlData: REF 0.72 · NOK 0.81 · <span class="rule-hit">Δ +12.5%</span><br>dlLoadControlData: REF 0.65 · NOK 0.64</div>'),
+        '<div style="display:flex;gap:8px;margin-bottom:6px"><input style="flex:1;padding:4px;border:1px solid #ccc" value="BLD_000006" readonly><input style="flex:1;padding:4px;border:1px solid #ccc" value="BLD_000004" readonly><button class="p-btn">Compare</button></div>' + item('Source Commits', '<div class="mono">12 files changed · L2Ps scheduler.cpp (+48 −12)</div>'),
+      ];
+      const bodyHtml = views.map((v,i) => '<div class="comp-body" data-comp-body="' + i + '" style="display:' + (i===2?'block':'none') + '">' + v + '</div>').join('');
+      return '<div class="view-panel" data-view="comparing"><div class="tabs inner-tab-list"><ol class="tab-list">' + tabs + '</ol><div class="tab-content" style="border:none;padding:0">' + bodyHtml + '</div></div></div>';
+    }
+
+    function kpiPanel() {
+      return '<div class="view-panel" data-view="kpi">' + openRow() +
+        '<div class="isa_info">OK vs NOK PM 计数器对比</div><div class="chart-area"><div class="chart-title">NRCELL-111</div><div class="bar-row" id="kpi-bars">' +
+        ['COUNTER_AVAIL_CH','120','113','−5.9%','COUNTER_USED_CH','90','92','+1.8%','COUNTER_SLOT_CH','85','85','−0.05%'].reduce((a,_,i,arr) => {
+          if (i%4) return a;
+          const [lbl,ok,nok,delta] = arr.slice(i,i+4);
+          const col = delta.startsWith('+')?'#4CAF50':(delta==='−0.05%'?'#888':'#f44336');
+          return a + '<div class="bar-group"><div class="bars"><div class="bar ok" style="height:0" data-h="'+ok+'"></div><div class="bar nok" style="height:0" data-h="'+nok+'"></div></div><div class="bar-label">'+lbl+'<br><span style="color:'+col+'">'+delta+'</span></div></div>';
+        },'') + '</div></div></div>';
+    }
+
+    function longtermPanel() {
+      return '<div class="view-panel" data-view="longterm">' + openRow() +
+        item('7 天 KPI 趋势', sparkline([42,48,52,50,55,58,62,60,57,54,52,56,61,65,63,60,58,55,53,50,48,52,58,64]) +
+        '<p style="font-size:11px;color:#888;margin-top:8px">COUNTER_AVAIL_CH · 日粒度 · NRCELL-111</p>', 200) + '</div>';
+    }
+
+    function genericTrace(name, color) {
+      return '<div class="view-panel" data-view="' + name + '">' + openRow() + item(name + ' 时间轴',
+        '<div style="display:flex;gap:1px;height:36px;margin-top:4px">' +
+        Array.from({length:60},(_,i) => '<div style="flex:1;background:'+color+';opacity:'+(0.3+Math.random()*0.7)+';min-height:'+(8+Math.random()*28)+'px;align-self:flex-end"></div>').join('') +
+        '</div><p style="font-size:11px;color:#888;margin-top:6px">合成 Trace · 多 UE</p>', 180) + '</div>';
+    }
+
+    function syslogPanel(kind) {
+      const pages = kind==='5g' ? ['L2Ps','L2Lo','L2HiDu','L2HiCu','L1','RF'] : (kind==='lte' ? ['MACPS','PHY','L1'] : ['RF Cal','SOAP']);
+      const tabs = pages.map((p,i) => '<li class="tab-list-item'+(i===0?' tab-list-active':'')+'" data-log="'+p+'">'+p+'</li>').join('');
+      const body = pages.map((p,i) => '<div class="log-body" data-log-body="'+p+'" style="display:'+(i===0?'block':'none')+'">'+item(p+' Log', '<div class="mono">[INFO] '+p+' module started<br>[WARN] sample warning line<br>[ERROR] sample error line</div>')+'</div>').join('');
+      return '<div class="view-panel" data-view="syslog-'+kind+'"><div class="tabs inner-tab-list"><ol class="tab-list">'+tabs+'</ol><div class="tab-content" style="border:none;padding:0">'+body+'</div></div></div>';
+    }
+
+    function l1hbPanel() {
+      return '<div class="view-panel" data-view="l1hb">' + openRow() + item('L1 SRS History Buffer',
+        table(['SFN:Slot','UE','SRS SNR','Rank'], [['1024:3','17042','18.2 dB','2'],['1024:4','17043','15.7 dB','1'],['1024:5','17044','21.0 dB','2']]) +
+        sparkline([20,35,42,38,45,52,48,40,35,30,38,44,50,46]), 200) + '</div>';
+    }
+
+    function bipPanel() {
+      return '<div class="view-panel" data-view="bip">' + openRow() + item('BIP Log 解析', '<div class="mono">Packet #1: BIP_HEADER magic=0xBIP1 len=4096<br>Packet #2: IQ_SAMPLE block 256 samples<br>Packet #3: TIMESTAMP sync</div>') + '</div>';
+    }
+
+    function timemarkerPanel() {
+      return '<div class="view-panel" data-view="timemarker">' + openRow() + item('TimeMarker 对齐', table(['标记','SFN','Slot','事件'], [
+        ['T0','1024','0','Trace start'],['T1','1024','3','RACH Msg1'],['T2','1024','7','DL grant']
+      ])) + '</div>';
+    }
+
+    function ecpriPanel() {
+      return '<div class="view-panel" data-view="ecpri">' + openRow() +
+        item('eCPRI / eGen PCAP', '<div class="pcap-list mono"><div>#&nbsp;&nbsp;Time&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Type&nbsp;&nbsp;&nbsp;&nbsp;Len</div>' +
+        [[1,'0.000123','ECPRI IQ',1024],[2,'0.000245','ECPRI Ctrl',64],[3,'0.000367','ECPRI IQ',1024],[4,'0.000489','RT Control',128]].map(r =>
+          '<div>'+r[0]+'&nbsp;&nbsp;'+r[1]+'&nbsp;&nbsp;'+r[2]+'&nbsp;&nbsp;'+r[3]+'</div>').join('') + '</div>') + '</div>';
+    }
+
+    function crmPanel() {
+      return '<div class="view-panel" data-view="crm">' + openRow() + item('CRM Log', '<div class="mono">[CRM] cell 111 state: ACTIVE<br>[CRM] carrier aggregation: 2 CC</div>') + '</div>';
+    }
+
+    function msiPanel() {
+      return '<div class="view-panel" data-view="msi">' + openRow() + item('MSI 文件解析', table(['字段','值'], [['Version','3.2'],['SiteId','SITE-001'],['Timestamp','2026-03-04']])) + '</div>';
+    }
+
+    function toolsPanel() {
+      return '<div class="view-panel" data-view="tools"><div class="link-list">' +
+        '<h2>General Documents for Pronto Analyzing</h2><a href="#">How to precheck U-Plane crashes</a><br><a href="#">5G Pronto Cookbook</a><br><a href="#">Troubleshooting Manual</a>' +
+        '<h2>5G Troubleshooting Guides</h2><a href="#">DL RLC Latency guide</a><br><a href="#">RACH troubleshooting guide</a>' +
+        '<h2>Useful Tools</h2><a href="#">TtiTraceHelper</a> — binary trace to CSV<br><a href="#">Web EM</a> — snapshot config viewer<br><a href="#">MCShark</a> — Wireshark plugins</div></div>';
+    }
+
+  /* ── 5G module (G5.js) ── */
+    const G5_TABS = [
+      ['l1hb','L1 HB Analyzer'], ['syslog','Syslog Analyzer'], ['l2ps','L2Ps Trace Analyzer'],
+      ['l2lo','L2Lo Trace Analyzer'], ['l2hidu','L2HiDu Trace Analyzer'], ['l2hicu','L2HiCu Trace Analyzer'],
+      ['bip','Bip log Analyzer'], ['timemarker','L2Rt TimeMarker'], ['kpi','KPI Analyzer'],
+      ['snapshot','Snapshot'], ['longterm','LongtermKPI'], ['comparing','Comparing']
+    ];
+
+    function buildG5() {
+      const panels = {
+        l1hb: l1hbPanel(), syslog: syslogPanel('5g'), l2ps: l2psPanel(),
+        l2lo: genericTrace('l2lo','#4CAF50'), l2hidu: genericTrace('l2hidu','#FF9800'),
+        l2hicu: genericTrace('l2hicu','#9C27B0'), bip: bipPanel(), timemarker: timemarkerPanel(),
+        kpi: kpiPanel(), snapshot: snapshotPanel(), longterm: longtermPanel(), comparing: comparingPanel(),
+      };
+      const tabHtml = G5_TABS.map(([k,l]) => '<li class="tab-list-item'+(k==='snapshot'?' tab-list-active':'')+'" data-g5="'+k+'">'+l+'</li>').join('');
+      const panelHtml = G5_TABS.map(([k]) => {
+        const active = k === 'snapshot';
+        return panels[k].replace('<div class="view-panel"',
+          '<div class="view-panel g5-panel'+(active?' active':'')+'" id="g5-'+k+'" style="display:'+(active?'flex':'none')+'"');
+      }).join('');
+      return '<div class="tab-panel active" id="panel-5g"><div class="spinner-mask" id="spinner"><span>解析中…</span></div><div class="tabs" id="g5-tabs"><ol class="tab-list" id="g5-tab-list">'+tabHtml+'</ol><div class="tab-content" style="position:relative">'+panelHtml+'</div></div></div>';
+    }
+
+    const LTE_TABS = [['syslog','Syslog analyzer'],['tdd','TDD TTITrace analyzer'],['fdd','FDD TTITrace analyzer'],['kpi','KPI Analyzer'],['snapshot','Snapshot'],['longterm','LongtermKPI']];
+    function buildLTE() {
+      const views = {
+        syslog: syslogPanel('lte'), tdd: genericTrace('tdd','#2196F3'), fdd: genericTrace('fdd','#00BCD4'),
+        kpi: kpiPanel(), snapshot: snapshotPanel(), longterm: longtermPanel(),
+      };
+      const tabs = LTE_TABS.map(([k,l],i) => '<li class="tab-list-item'+(i===0?' tab-list-active':'')+'" data-lte="'+k+'">'+l+'</li>').join('');
+      const panels = LTE_TABS.map(([k],i) => {
+        const active = i === 0;
+        return views[k].replace('<div class="view-panel"',
+          '<div class="view-panel lte-panel'+(active?' active':'')+'" id="lte-'+k+'" style="display:'+(active?'flex':'none')+'"');
+      }).join('');
+      return '<div class="tab-panel" id="panel-lte"><div class="tabs"><ol class="tab-list" id="lte-tab-list">'+tabs+'</ol><div class="tab-content">'+panels+'</div></div></div>';
+    }
+
+    const RF_TABS = [['syslog','Syslog Analyzer'],['soap','SOAP Analyzer']];
+    function buildRF() {
+      const tabs = RF_TABS.map(([k,l],i) => '<li class="tab-list-item'+(i===0?' tab-list-active':'')+'" data-rf="'+k+'">'+l+'</li>').join('');
+      const syslog = syslogPanel('rf').replace('<div class="view-panel"',
+        '<div class="view-panel rf-panel active" id="rf-syslog" style="display:flex"');
+      const soap = '<div class="view-panel rf-panel" id="rf-soap" style="display:none">' + openRow() +
+        item('SOAP 消息', table(['时间','操作','结果'], [['12:00:01','getCalibration','OK'],['12:00:02','setBeamWeight','OK']])) + '</div>';
+      return '<div class="tab-panel" id="panel-rf"><div class="tabs"><ol class="tab-list" id="rf-tab-list">'+tabs+'</ol><div class="tab-content">'+syslog+soap+'</div></div></div>';
+    }
+
+    const AIRPHONE_TABS = [['syslog','Syslog Analyzer'],['tti','TtiTrace Analyzer'],['snapshot','Snapshot']];
+    function buildAirPhone() {
+      const tabs = AIRPHONE_TABS.map(([k,l],i) => '<li class="tab-list-item'+(i===0?' tab-list-active':'')+'" data-ap="'+k+'">'+l+'</li>').join('');
+      const traceBars = Array.from({length:50},() => '<div style="flex:1;background:#673AB7;opacity:'+(0.3+Math.random()*0.7)+';min-height:'+(8+Math.random()*28)+'px;align-self:flex-end"></div>').join('');
+      const panels = [
+        '<div class="view-panel ap-panel active" id="ap-syslog" style="display:flex">'+openRow()+item('AirPhone Syslog','<div class="mono">[INFO] UE attach success<br>[INFO] Throughput test 850 Mbps</div>')+'</div>',
+        '<div class="view-panel ap-panel" id="ap-tti" style="display:none">'+openRow()+item('TtiTrace 时间轴','<div style="display:flex;gap:1px;height:36px">'+traceBars+'</div>')+'</div>',
+        '<div class="view-panel ap-panel" id="ap-snapshot" style="display:none">'+openRow()+item('CellMapping', table(['小区','状态'], [['LTE-1','激活'],['LTE-2','激活']]))+'</div>',
+      ].join('');
+      return '<div class="tab-panel" id="panel-airphone"><div class="tabs"><ol class="tab-list" id="ap-tab-list">'+tabs+'</ol><div class="tab-content">'+panels+'</div></div></div>';
+    }
+
+    const APP_TABS = [
+      ['lte','LTE'], ['5g','5G'], ['rf','RF'], ['ecpri','eCPRI'], ['crm','CRM'],
+      ['airphone','AirPhone'], ['msi','MSI'], ['tools','🔧 Troubleshooting']
+    ];
+
+    function init() {
+      const appList = document.getElementById('app-tab-list');
+      const appPanels = document.getElementById('app-panels');
+      appList.innerHTML = APP_TABS.map(([k,l],i) => '<li class="tab-list-item'+(k==='5g'?' tab-list-active':'')+'" data-app="'+k+'">'+l+'</li>').join('');
+      appPanels.innerHTML = buildLTE() + buildG5() + buildRF() +
+        '<div class="tab-panel" id="panel-ecpri">'+ecpriPanel()+'</div>' +
+        '<div class="tab-panel" id="panel-crm">'+crmPanel()+'</div>' +
+        buildAirPhone() +
+        '<div class="tab-panel" id="panel-msi">'+msiPanel()+'</div>' +
+        '<div class="tab-panel" id="panel-tools">'+toolsPanel()+'</div>';
+
+      wireAppTabs();
+      wireSubTabs('#g5-tab-list', 'g5', onG5Switch);
+      wireSubTabs('#lte-tab-list', 'lte');
+      wireSubTabs('#rf-tab-list', 'rf');
+      wireSubTabs('#ap-tab-list', 'ap');
+      wireSnapTabs();
+      wireL2psTabs();
+      wireCompTabs();
+      wireLogTabs();
+      document.body.addEventListener('click', e => {
+        if (e.target.dataset.action === 'load') simulateLoad();
       });
-    });
+    }
+
+    function wireSubTabs(listSel, prefix, onSwitch) {
+      const list = document.querySelector(listSel);
+      if (!list) return;
+      list.querySelectorAll('.tab-list-item').forEach(tab => {
+        tab.addEventListener('click', () => {
+          list.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+          tab.classList.add('tab-list-active');
+          const key = tab.dataset[prefix];
+          document.querySelectorAll('.' + prefix + '-panel, #' + prefix + '-' + key).forEach(() => {});
+          document.querySelectorAll('[id^="'+prefix+'-"]').forEach(p => {
+            if (!p.id.startsWith(prefix + '-')) return;
+            const show = p.id === prefix + '-' + key;
+            p.style.display = show ? 'flex' : 'none';
+            p.classList.toggle('active', show);
+          });
+          if (prefix === 'g5') {
+            document.querySelectorAll('.g5-panel').forEach(p => {
+              const show = p.id === 'g5-' + key;
+              p.style.display = show ? 'flex' : 'none';
+            });
+          }
+          if (onSwitch) onSwitch(key);
+        });
+      });
+    }
+
+    function wireAppTabs() {
+      document.querySelectorAll('#app-tab-list .tab-list-item').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('#app-tab-list .tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+          tab.classList.add('tab-list-active');
+          const k = tab.dataset.app;
+          document.querySelectorAll('#app-panels > .tab-panel').forEach(p => p.classList.remove('active'));
+          document.getElementById('panel-' + k).classList.add('active');
+        });
+      });
+    }
+
+    function onG5Switch(key) {
+      if (key === 'kpi') animateKpiBars();
+      if (key === 'l2ps') renderTraceTimeline();
+    }
+
+    function wireSnapTabs() {
+      document.querySelectorAll('[data-snap]').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const root = tab.closest('#snap-tabs') || tab.closest('.tabs');
+          if (!root) return;
+          root.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+          tab.classList.add('tab-list-active');
+          const k = tab.dataset.snap;
+          root.querySelectorAll('.snap-body').forEach(b => b.style.display = b.dataset.snapBody === k ? 'block' : 'none');
+        });
+      });
+    }
+
+    function wireL2psTabs() {
+      document.querySelectorAll('[data-l2ps]').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const root = tab.closest('.tabs');
+          root.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+          tab.classList.add('tab-list-active');
+          const k = tab.dataset.l2ps;
+          root.querySelectorAll('.l2ps-body').forEach(b => b.style.display = b.dataset.l2psBody === k ? 'block' : 'none');
+          if (k === 'Scheduling') renderTraceTimeline();
+        });
+      });
+    }
+
+    function wireCompTabs() {
+      document.querySelectorAll('[data-comp]').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const root = tab.closest('.tabs');
+          root.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+          tab.classList.add('tab-list-active');
+          const i = tab.dataset.comp;
+          root.querySelectorAll('.comp-body').forEach(b => b.style.display = b.dataset.compBody === i ? 'block' : 'none');
+        });
+      });
+    }
+
+    function wireLogTabs() {
+      document.querySelectorAll('[data-log]').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const root = tab.closest('.tabs');
+          root.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+          tab.classList.add('tab-list-active');
+          const k = tab.dataset.log;
+          root.querySelectorAll('.log-body').forEach(b => b.style.display = b.dataset.logBody === k ? 'block' : 'none');
+        });
+      });
+    }
 
     function simulateLoad() {
       const spinner = document.getElementById('spinner');
       const filesBlock = document.getElementById('files-block');
       const fileList = document.getElementById('file-list');
+      if (!spinner) return;
       spinner.classList.add('show');
       setTimeout(() => {
         spinner.classList.remove('show');
-        filesBlock.style.display = 'block';
-        fileList.innerHTML = SYNTHETIC_FILES.map((f, i) =>
-          `<span class="colored-filename" style="background:${FILE_COLORS[i % FILE_COLORS.length]}">${i}:${f}</span><br>`
+        if (filesBlock) filesBlock.style.display = 'block';
+        if (fileList) fileList.innerHTML = SYNTHETIC_FILES.map((f, i) =>
+          '<span class="colored-filename" style="background:'+FILE_COLORS[i % FILE_COLORS.length]+'">'+i+':'+f+'</span><br>'
         ).join('');
-      }, 1200);
+      }, 900);
     }
 
     function animateKpiBars() {
@@ -768,50 +612,23 @@
 
     function renderTraceTimeline() {
       const el = document.getElementById('trace-timeline');
-      if (el.children.length) return;
+      if (!el || el.children.length) return;
       const colors = ['#2196F3','#4CAF50','#FF9800','#9C27B0','#f44336','#00BCD4'];
       for (let i = 0; i < 80; i++) {
         const b = document.createElement('div');
-        b.style.cssText = `flex:1;background:${colors[i % colors.length]};opacity:${0.3 + Math.random() * 0.7};min-height:${8 + Math.random() * 28}px;align-self:flex-end`;
+        b.style.cssText = 'flex:1;background:'+colors[i%colors.length]+';opacity:'+(0.3+Math.random()*0.7)+';min-height:'+(8+Math.random()*28)+'px;align-self:flex-end';
         el.appendChild(b);
       }
     }
 
-    // L2Ps inner tab switching
-    document.querySelectorAll('#l2ps-tabs .tab-list-item').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('#l2ps-tabs .tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
-        tab.classList.add('tab-list-active');
-        const isAuto = tab.dataset.l2ps === 'auto';
-        document.getElementById('l2ps-timeline').style.display = isAuto ? 'none' : 'block';
-        document.getElementById('l2ps-auto').style.display = isAuto ? 'block' : 'none';
-      });
-    });
+    window.showLogBrowser = () => document.getElementById('lb-overlay').classList.add('show');
+    window.hideLogBrowser = () => document.getElementById('lb-overlay').classList.remove('show');
+    window.showIdeDemo = () => document.getElementById('ide-overlay').classList.add('show');
+    window.hideIdeDemo = () => document.getElementById('ide-overlay').classList.remove('show');
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { hideIdeDemo(); hideLogBrowser(); } });
 
-    function showLogBrowser() { document.getElementById('lb-overlay').classList.add('show'); }
-    function hideLogBrowser() { document.getElementById('lb-overlay').classList.remove('show'); }
-    function showIdeDemo() { document.getElementById('ide-overlay').classList.add('show'); }
-    function hideIdeDemo() { document.getElementById('ide-overlay').classList.remove('show'); }
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { hideIdeDemo(); hideLogBrowser(); }
-    });
-
-    // Auto-demo for video: cycle 5G tabs
-  function autoDemo() {
-    const sequence = ['snapshot', 'kpi', 'comparing', 'l2ps'];
-    let i = 0;
-    function next() {
-      if (i === 0) simulateLoad();
-      const tab = document.querySelector(`#g5-tab-list [data-g5="${sequence[i]}"]`);
-      if (tab) tab.click();
-      i = (i + 1) % sequence.length;
-      if (i === 0) setTimeout(() => { showIdeDemo(); setTimeout(hideIdeDemo, 4000); }, 2500);
-      setTimeout(next, 3500);
-    }
-    setTimeout(next, 1000);
-  }
-  // Uncomment for hands-free recording:
-  // autoDemo();
+    init();
+  })();
   </script>
 </body>
 </html>

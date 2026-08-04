@@ -199,6 +199,9 @@
     }
     .tti-chart-bars { display: flex; align-items: flex-end; gap: 0; height: 100%; padding: 0 2px; }
     .tti-chart-bars span { flex: 1; min-width: 2px; background: #FF8C00; opacity: 0.88; }
+    .tti-chart-bars.blue-area span { background: #42a5f5; opacity: 0.9; }
+    .tti-chart-legend { font-size: 10px; color: #42a5f5; padding: 2px 12px 4px; font-family: Verdana, sans-serif; }
+    .tti-chart-popup { float: right; font-size: 10px; color: #3B82F6; padding: 4px 8px; cursor: pointer; }
     .tti-marker {
       position: absolute; top: 0; bottom: 18px; width: 0; border-left: 2px dashed #e53935; z-index: 2; pointer-events: none;
     }
@@ -514,12 +517,46 @@
         '<div class="tti-xaxis"><span>20:15:30</span><span>20:15:40</span><span>20:15:50</span><span>20:16:00</span><span>20:16:10</span><span>20:16:20</span><span>20:16:30</span></div>';
     }
 
+    function ttiAreaChart(height, seed) {
+      let bars = '';
+      for (let i = 0; i < 140; i++) {
+        let h = 2;
+        if (i > 58) h = 48 + ((seed + i * 5) % 45);
+        else if (i > 48) h = 12 + ((seed + i * 3) % 20);
+        bars += '<span style="height:' + h + '%"></span>';
+      }
+      return '<div class="tti-chart-wrap" style="height:' + height + 'px"><div class="tti-marker" style="left:44%"></div><div class="tti-marker" style="left:58%"></div>' +
+        '<div class="tti-chart-bars blue-area">' + bars + '</div></div>' +
+        '<div class="tti-chart-legend">ulFdSchedData numOfPrb</div>' +
+        '<div class="tti-xaxis"><span>20:15:30</span><span>20:15:40</span><span>20:15:50</span><span>20:16:00</span><span>20:16:10</span><span>20:16:20</span><span>20:16:30</span></div>';
+    }
+
+    function ttiShavedChart() {
+      const colors = ['#fce4ec','#f3e5f5','#e8eaf6','#e3f2fd','#e0f2f1','#f1f8e9','#fff8e1','#fbe9e7','#efebe9','#eceff1','#e8f5e9','#fff3e0','#f9fbe7'];
+      const vals = [0, 1, 0, 2, 0, 0, 1, 0, 3, 0, 1, 0, 2];
+      const bands = colors.map((c, i) => {
+        const n = vals[i % vals.length];
+        return '<div style="background:' + c + ';opacity:0.75;font-size:8px;color:#666">' + (n || '') + '</div>';
+      }).join('');
+      return '<div class="tti-subcell-wrap" style="height:110px"><div class="tti-marker" style="left:44%"></div><div class="tti-marker" style="left:58%"></div><div class="tti-subcell-bands">' + bands + '</div><div class="tti-subcell-line" style="background:#42a5f5;opacity:0.35"></div></div>' +
+        '<div class="tti-chart-legend">ulFdSchedData rrmNumOfPrbShaved</div>' +
+        '<div class="tti-xaxis"><span>20:15:30</span><span>20:15:40</span><span>20:15:50</span><span>20:16:00</span><span>20:16:10</span><span>20:16:20</span><span>20:16:30</span></div>';
+    }
+
     function dlCellView() {
       return '<div class="tti-toolbar">' +
         '<button class="p-btn preview-on">Preview Enabled</button>' +
         '<button class="p-btn p-btn-outlined">Expand All</button><button class="p-btn p-btn-outlined">Collapse All</button><button class="p-btn p-btn-outlined">Save Page</button></div>' +
         '<div class="tti-chart-block">' + ttiChartHead('dlFdSchedData numOfPrb') + ttiSpikeChart(130, 42) + '</div>' +
-        '<div class="tti-chart-block">' + ttiChartHead('dlTdSchedSubcellData numOfPrb') + ttiSubcellChart() + '</div>';
+        '<div class="tti-chart-block">' + ttiChartHead('dlTdSchedSubcellData numOfPrb') + ttiSubcellChart() + '<span class="tti-chart-popup">Popup Expand</span></div>';
+    }
+
+    function ulCellView() {
+      return '<div class="tti-toolbar">' +
+        '<button class="p-btn preview-on">Preview Enabled</button>' +
+        '<button class="p-btn p-btn-outlined">Expand All</button><button class="p-btn p-btn-outlined">Collapse All</button><button class="p-btn p-btn-outlined">Save Page</button></div>' +
+        '<div class="tti-chart-block">' + ttiChartHead('ulFdSchedData numOfPrb') + ttiAreaChart(130, 63) + '<span class="tti-chart-popup">Popup Expand</span></div>' +
+        '<div class="tti-chart-block">' + ttiChartHead('ulFdSchedData rrmNumOfPrbShaved') + ttiShavedChart() + '<span class="tti-chart-popup">Popup Expand</span></div>';
     }
 
     function heatColor(v) {
@@ -720,12 +757,13 @@
         '<div class="sched-scroll"><table class="sched-table"><tr>' + th + '</tr>' + tr + '</table></div>';
     }
 
-    function l2psSubTabPanel(defaultSub, subViews) {
+    function l2psSubTabPanel(defaultSub, subViews, labelPrefix) {
+      const prefix = labelPrefix || 'DL';
       const dlSubTabs = L2PS_DL_SUB.map(t =>
         '<li class="tab-list-item' + (t === defaultSub ? ' tab-list-active' : '') + '" data-l2ps-sub="' + t + '">' + t + '</li>'
       ).join('');
       const bodies = L2PS_DL_SUB.map(t => {
-        const content = subViews[t] || ('<div class="mono">DL / ' + t + ' — synthetic trace view</div>');
+        const content = subViews[t] || ('<div class="mono">' + prefix + ' / ' + t + ' — synthetic trace view</div>');
         const wrapped = typeof content === 'string' && content.indexOf('tti-toolbar') >= 0 ? content : item(t, content, 120);
         return '<div class="l2ps-sub-body" data-l2ps-sub-body="' + t + '" style="display:' + (t === defaultSub ? 'block' : 'none') + '">' + wrapped + '</div>';
       }).join('');
@@ -735,11 +773,13 @@
     function l2psPanel() {
       const tabs = L2PS_TABS.map(t => '<li class="tab-list-item' + (t==='DL'?' tab-list-active':'') + '" data-l2ps="' + t + '">' + t + '</li>').join('');
       const dlSubViews = { Cell: dlCellView(), Statistics: statisticsView() };
-      const dlBody = l2psSubTabPanel('Statistics', dlSubViews);
+      const dlBody = l2psSubTabPanel('Statistics', dlSubViews, 'DL');
+      const ulSubViews = { Cell: ulCellView() };
+      const ulBody = l2psSubTabPanel('Cell', ulSubViews, 'UL');
       const schedulingBody = scheduleTableView();
       const bodies = {
         DL: dlBody,
-        UL: item('UL Cell', heatmap(14, 4, i => 'hsl(200,'+(35+(i%10)*5)+'%,'+(50+(i%6)*4)+'%)'), 160),
+        UL: ulBody,
         PDCCH: item('PDCCH CCE Usage', sparkline([30,45,62,88,92,85,70,55,40,35,50,65,80,75,60,45]), 140),
         RACH: rachPanel(),
         BwpSwitch: item('BwpSwitch', '<div class="mono">UE-17042 BWP switch: BWP#0 → BWP#1 @ sfn 641:18</div>'),

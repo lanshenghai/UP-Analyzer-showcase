@@ -38,7 +38,29 @@ setTimeout(autoDemo, 2000);
 
 3. This will automatically cycle through Snapshot → KPI → Trace → Investigation every 3 seconds
 
-## Screenshot Targets
+## Quick Start (Screenshots)
+
+**一键截图引导：**
+
+```powershell
+# 方式 1：双击运行
+scripts\capture-screenshots.bat
+
+# 方式 2：PowerShell
+powershell -ExecutionPolicy Bypass -File scripts/capture-screenshots.ps1
+```
+
+脚本会：打开 `demo/index.html` → 打开 `assets/screenshots/` 文件夹 → 分 5 步提示你按 Win+Shift+S 截图保存。
+
+| # | 操作 | 保存为 |
+|---|------|--------|
+| 1 | 5G → Snapshot → 点 Open Folder | `01-snapshot-overview.png` |
+| 2 | 切到 KPI Analyzer | `02-kpi-dashboard.png` |
+| 3 | 切到 L2Ps Trace Analyzer | `03-trace-visualization.png` |
+| 4 | 点 IDE Demo 按钮 | `04-ide-integration.png` |
+| 5 | IDE 弹窗里显示调查结论 | `05-ai-investigation.png` |
+
+## Screenshot Targets (manual)
 
 Capture these views for `assets/screenshots/`:
 

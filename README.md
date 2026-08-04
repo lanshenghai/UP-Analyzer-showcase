@@ -1,157 +1,158 @@
 # UP-Analyzer Showcase
 
-> **Engineering log intelligence platform** — from fragmented scripts to a daily-driver desktop product with IDE-native AI investigation workflows.
+> **工程日志智能分析平台** — 从碎片化脚本到日活过万的桌面产品，再到 IDE 原生 AI 排障工作流。
 
-[![Demo](https://img.shields.io/badge/Demo-5%20min%20video-blue)](docs/demo-video-script.md)
-[![Author](https://img.shields.io/badge/Author-Lan%20Shenghai-green)](https://github.com/lanshenghai)
+[![在线演示](https://img.shields.io/badge/在线演示-立即体验-blue)](https://lanshenghai.github.io/UP-Analyzer-showcase/)
+[![作者](https://img.shields.io/badge/作者-兰生海-green)](https://github.com/lanshenghai)
 
-**Author:** [兰生海 / Lan Shenghai](https://github.com/lanshenghai)  
-**Role:** Independent initiator, architect, and lead developer (2018 — present)  
-**Scale:** v12+, 6,000+ commits, ~10K DAU across global R&D teams
-
----
-
-## What is UP-Analyzer?
-
-UP-Analyzer is a **desktop engineering diagnostics platform** I built alongside my day job as a real-time systems architect. It unifies heterogeneous engineering logs — binary traces, snapshots, system logs, network captures, and KPI counters — into one interactive workflow.
-
-The platform evolved over **8 years** from a personal Python script into:
-
-- An **Electron + React** cross-platform desktop product (Windows / Linux)
-- An embedded **Python runtime** with 500+ domain-specific parsers
-- A decoupled **binary trace decode engine** (TtiTraceHelper)
-- **IDE plugins** for Cursor / VS Code that let AI agents query live parsed sessions
-- A **staged AI investigation pipeline** (Planner → Worker → Reviewer → Gate) for regression root-cause analysis
-
-**Measured impact:** average troubleshooting time reduced from **weeks to hours**.
-
-> ⚠️ **Note:** This repository is a **public showcase** for portfolio and interview purposes. The production codebase is proprietary and not included here. All screenshots, data, and examples use synthetic or desensitized content.
+**作者：** [兰生海](https://github.com/lanshenghai)  
+**角色：** 独立发起人、架构师、核心开发者（2018 — 至今）  
+**规模：** v12+，6000+ commit，全球研发日活约 1 万
 
 ---
 
-## Quick Links
+## UP-Analyzer 是什么？
 
-| Resource | Description |
-|----------|-------------|
-| [Architecture](docs/architecture.md) | System design, layering, and key engineering decisions |
-| [5-Min Demo Script](docs/demo-video-script.md) | Storyboard for recording a portfolio demo video |
-| [Recording Guide](docs/recording-guide.md) | OBS setup, desensitization steps, export settings |
-| [AI Investigation Overview](docs/ai-investigation.md) | Staged gate workflow for automated root-cause analysis |
-| [Sample Report](examples/sample-investigation-report.md) | Desensitized end-to-end investigation example |
-| [Interactive Mock](https://lanshenghai.github.io/UP-Analyzer-showcase/) | Browser-based UI mock for screenshots and demo B-roll |
+UP-Analyzer 是我在担任实时系统架构师的本职工作之余，独立构建的**桌面工程诊断平台**。它将二进制 Trace、Snapshot、系统日志、网络抓包、KPI 计数器等异构工程日志，统一到一条交互式工作流中。
+
+平台历经 **8 年**演进，从个人 Python 脚本成长为：
+
+- **Electron + React** 跨平台桌面产品（Windows / Linux）
+- 捆绑 **嵌入式 Python 运行时**，含 500+ 领域解析脚本
+- 解耦的**二进制 Trace 解码引擎**（TtiTraceHelper）
+- **IDE 插件**（Cursor / VS Code），让 AI Agent 直接查询本机解析会话
+- **分阶段 AI 调查流水线**（Planner → Worker → Reviewer → Gate），用于回归根因分析
+
+**实测效果：** 平均排障时间从**数周级降至数小时级**。
+
+> ⚠️ **说明：** 本仓库是面向作品集与面试的**公开展示**，不含生产环境专有代码。所有截图、数据与示例均为合成或脱敏内容。
 
 ---
 
-## Architecture at a Glance
+## 快速导航
+
+| 资源 | 说明 |
+|------|------|
+| [架构设计](docs/architecture.md) | 系统分层与关键工程决策 |
+| [5 分钟演示脚本](docs/demo-video-script.md) | 录制作品集 Demo 视频的分镜稿 |
+| [录制指南](docs/recording-guide.md) | OBS 设置、脱敏检查、导出参数 |
+| [AI 调查流水线](docs/ai-investigation.md) | 分阶段 Gate 自动化根因分析 |
+| [调查报告样例](examples/sample-investigation-report.md) | 脱敏端到端调查示例 |
+| [在线交互演示](https://lanshenghai.github.io/UP-Analyzer-showcase/) | 浏览器 UI 模拟，可用于截图与录屏 |
+
+---
+
+## 架构概览
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  Cursor / VS Code (IDE Extension)                       │
-│  Slash commands · Prompt orchestration · Stage A–E      │
+│  Cursor / VS Code（IDE 插件）                            │
+│  斜杠命令 · Prompt 编排 · Stage A–E 调查                 │
 └───────────────────────────┬─────────────────────────────┘
-                            │ parser_servers registry
+                            │ parser_servers 注册表
 ┌───────────────────────────▼─────────────────────────────┐
-│  Electron + React (Desktop Shell + Visualization)       │
-│  Snapshot · KPI · Syslog · PCAP · Cross-version Compare │
+│  Electron + React（桌面壳 + 可视化）                     │
+│  Snapshot · KPI · Syslog · PCAP · 跨版本对比             │
 └───────────────────────────┬─────────────────────────────┘
                             │
         ┌───────────────────┼───────────────────┐
         ▼                   ▼                   ▼
-  Embedded Python      Decode Engine         Release Pipeline
-  500+ parsers         Multi-product         S3 · Signing · Auto-update
+  嵌入式 Python          解码引擎              发布流水线
+  500+ 解析脚本          多产品线统一          S3 · 签名 · 自动更新
 ```
 
-See [docs/architecture.md](docs/architecture.md) for the full breakdown.
+详见 [docs/architecture.md](docs/architecture.md)。
 
 ---
 
-## Evolution Timeline
+## 演进时间线
 
-| Year | Milestone | Capability unlocked |
-|------|-----------|---------------------|
-| 2018 | v1–v4 prototype | Domain visualization (beam / trace / KPI) |
-| 2019 | v5–v6 Electron product | Installable desktop app, auto-update |
-| 2020–21 | v7–v8 platform + award | Snapshot workflow, embedded Python, org-wide adoption |
-| 2022 | v9–v10 rebrand + engine split | UP-Analyzer naming, TtiTraceHelper decode engine |
-| 2023–25 | v10–v11 scale | Multi-domain expansion, release compatibility governance |
-| 2026 | v12 + IDE/AI | Copilot integration, staged investigation pipeline |
-
----
-
-## Key Metrics (Portfolio)
-
-| Metric | Value |
-|--------|-------|
-| Active development | 2018.02 — present |
-| Commits (main repo) | 6,000+ |
-| Parser scripts | ~500 |
-| Functional domains | 8+ (L1–L3 stack) |
-| Daily active users | ~10,000 |
-| Platforms | Windows, Linux |
-| Efficiency gain | Weeks → hours (avg. troubleshooting) |
+| 年份 | 里程碑 | 解锁的能力 |
+|------|--------|-----------|
+| 2018 | v1–v4 原型 | 领域可视化（Beam / Trace / KPI） |
+| 2019 | v5–v6 桌面产品 | 可安装、可自动更新 |
+| 2020–21 | v7–v8 平台化 + 获奖 | Snapshot 工作流、嵌入式 Python、组织级推广 |
+| 2022 | v9–v10 品牌升级 + 引擎解耦 | UP-Analyzer 命名、TtiTraceHelper 解码引擎 |
+| 2023–25 | v10–v11 规模化 | 多域扩展、版本兼容治理 |
+| 2026 | v12 + IDE/AI | Copilot 集成、分阶段调查流水线 |
 
 ---
 
-## Tech Stack
+## 关键指标
 
-- **Desktop:** Electron, React, Node.js
-- **Parsing:** Python 3.12 (embedded), multi-threaded decode
-- **IDE:** VS Code Extension API, Cursor plugin integration
-- **AI:** LLM orchestration with staged gates, knowledge base, RAG-style context
-- **Release:** Code signing, S3 auto-update, cross-release format compatibility
+| 指标 | 数值 |
+|------|------|
+| 持续开发 | 2018.02 — 至今 |
+| 主仓 Commit | 6000+ |
+| 解析脚本 | ~500 |
+| 功能域 | 8+（L1–L3 全栈） |
+| 日活用户 | ~10,000 |
+| 支持平台 | Windows、Linux |
+| 效率提升 | 数周 → 数小时（平均排障） |
 
 ---
 
-## Demo Video
+## 技术栈
 
-Record a 5-minute walkthrough following [docs/demo-video-script.md](docs/demo-video-script.md).
+- **桌面端：** Electron、React、Node.js
+- **解析层：** Python 3.12（嵌入式）、多线程解码
+- **IDE：** VS Code Extension API、Cursor 插件集成
+- **AI：** 分阶段 Gate 编排、知识库、RAG 式上下文
+- **发布：** 代码签名、S3 自动更新、跨 Release 格式兼容
 
-**Suggested flow:**
-1. Problem context (30s)
-2. Snapshot one-click analysis (60s)
-3. KPI / trace visualization (60s)
-4. IDE plugin + AI query (90s)
-5. Staged investigation result (60s)
-6. Summary + metrics (30s)
+---
 
-Upload to Bilibili / YouTube and link here:
+## 演示视频
+
+按 [docs/demo-video-script.md](docs/demo-video-script.md) 录制 5 分钟 walkthrough。
+
+**建议流程：**
+1. 问题背景（30 秒）
+2. Snapshot 一键分析（60 秒）
+3. KPI / Trace 可视化（60 秒）
+4. IDE 插件 + AI 查询（90 秒）
+5. 分阶段调查结果（60 秒）
+6. 总结与指标（30 秒）
+
+上传至 B 站 / YouTube 后在此附上链接：
 
 ```
-<!-- Replace with your video URL after recording -->
-🎬 Demo video: (pending — see docs/recording-guide.md)
+🎬 演示视频：（待录制 — 见 docs/recording-guide.md）
 ```
 
-**Live demo:** https://lanshenghai.github.io/UP-Analyzer-showcase/
+**在线演示：** https://lanshenghai.github.io/UP-Analyzer-showcase/
 
 ---
 
-## Screenshots
+## 截图
 
-Place desensitized screenshots in `assets/screenshots/`:
+将脱敏截图放入 `assets/screenshots/`：
 
-| File | Content |
-|------|---------|
-| `01-snapshot-overview.png` | Main window with synthetic snapshot loaded |
-| `02-kpi-dashboard.png` | KPI comparison view |
-| `03-trace-visualization.png` | Trace / beam visualization |
-| `04-ide-integration.png` | Cursor/VS Code with slash commands |
-| `05-ai-investigation.png` | Staged investigation output |
+| 文件 | 内容 |
+|------|------|
+| `01-snapshot-overview.png` | 主界面，Snapshot 已加载 |
+| `02-kpi-dashboard.png` | KPI 对比视图 |
+| `03-trace-visualization.png` | Trace / Beam 可视化 |
+| `04-ide-integration.png` | Cursor/VS Code 斜杠命令 |
+| `05-ai-investigation.png` | 分阶段调查输出 |
 
-Use the [interactive mock](demo/index.html) if you cannot capture the production UI.
+可使用 [在线交互演示](https://lanshenghai.github.io/UP-Analyzer-showcase/) 或本地 `demo/index.html` 截图。
 
----
-
-## About the Author
-
-**兰生海 (Lan Shenghai)** — 20+ years in real-time embedded / telecom software. HIT master's degree. Led 5G scheduling teams while independently building and operating UP-Analyzer as a product owner.
-
-- GitHub: [lanshenghai](https://github.com/lanshenghai)
-- Email: lanshenghai@126.com
+一键截图引导：运行 `scripts/capture-screenshots.bat`
 
 ---
 
-## License
+## 关于作者
 
-Showcase materials (documentation, demo HTML, diagrams) are released under [MIT](LICENSE).
+**兰生海** — 20 余年实时嵌入式 / 通信软件经验，哈尔滨工业大学硕士。带领 5G 调度团队的同时，以产品 Owner 身份独立构建并运营 UP-Analyzer。
 
-The production UP-Analyzer codebase is **not** part of this repository and remains proprietary.
+- GitHub：[lanshenghai](https://github.com/lanshenghai)
+- 邮箱：lanshenghai@126.com
+
+---
+
+## 许可
+
+展示材料（文档、演示 HTML、架构图）以 [MIT](LICENSE) 许可发布。
+
+生产环境 UP-Analyzer 代码**不在**本仓库中，仍为专有资产。

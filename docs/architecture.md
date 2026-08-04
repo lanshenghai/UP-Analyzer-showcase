@@ -1,18 +1,18 @@
-# Architecture
+# 架构设计
 
-> Desensitized architecture overview for portfolio use. No proprietary protocol details or internal URLs.
+> 面向作品集的脱敏架构说明。不含专有协议细节与内部 URL。
 
-## Design Goals
+## 设计目标
 
-1. **Unify fragmented workflows** — one product instead of dozens of scripts and decoders
-2. **Survive release churn** — parsers adapt per software release without rewriting the shell
-3. **Scale to thousands of engineers** — auto-update, code signing, cross-platform delivery
-4. **Embed into daily tools** — IDE plugins so AI can query parsed data without context switching
-5. **Constrain AI hallucination** — staged investigation with deterministic gates, not free-form chat
+1. **统一碎片化工作流** — 一个产品替代数十个脚本和解码器
+2. **跟上版本迭代** — 解析器随软件 Release 演进，无需重写外壳
+3. **支撑数千工程师规模** — 自动更新、代码签名、跨平台交付
+4. **嵌入日常工具** — IDE 插件让 AI 查询解析数据，无需切换上下文
+5. **约束 AI 幻觉** — 分阶段调查 + 确定性 Gate，而非自由对话
 
 ---
 
-## Layered Architecture
+## 分层架构
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐

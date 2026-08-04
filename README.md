@@ -34,6 +34,7 @@ UP-Analyzer 是我在担任实时系统架构师的本职工作之余，独立�
 | 资源 | 说明 |
 |------|------|
 | [架构设计](https://lanshenghai.github.io/UP-Analyzer-showcase/architecture.html) | 系统分层与关键工程决策 |
+| [插件生态](https://lanshenghai.github.io/UP-Analyzer-showcase/up-analyzer-extra.html) | Log Browser、PMAT、bfcali、SCF 对比、TTI 规则引擎 |
 | [5 分钟演示脚本](https://lanshenghai.github.io/UP-Analyzer-showcase/demo-video-script.html) | 录制作品集 Demo 视频的分镜稿 |
 | [录制指南](https://lanshenghai.github.io/UP-Analyzer-showcase/recording-guide.html) | OBS 设置、脱敏检查、导出参数 |
 | [AI 调查流水线](https://lanshenghai.github.io/UP-Analyzer-showcase/ai-investigation.html) | 分阶段 Gate 自动化根因分析 |

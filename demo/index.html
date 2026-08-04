@@ -347,12 +347,84 @@
       color: #2196F3;
     }
     .spinner-mask.show { display: flex; }
+
+    /* Log Browser overlay mock */
+    .lb-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 90;
+      align-items: center;
+      justify-content: center;
+    }
+    .lb-overlay.show { display: flex; }
+    .lb-window {
+      width: 88%;
+      max-width: 960px;
+      height: 72%;
+      background: #fff;
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .lb-titlebar {
+      background: #f0f0f0;
+      padding: 6px 12px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ccc;
+    }
+    .lb-toolbar {
+      padding: 6px 10px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 12px;
+    }
+    .lb-filter {
+      flex: 1;
+      border: 1px solid #ced4da;
+      border-radius: 3px;
+      padding: 3px 8px;
+      font-family: Consolas, monospace;
+      font-size: 12px;
+    }
+    .lb-body {
+      flex: 1;
+      overflow: auto;
+      padding: 8px 12px;
+      font: 12px Consolas, monospace;
+      line-height: 1.5;
+      background: #fafafa;
+    }
+    .lb-hl { background: #fff3cd; }
+    .lb-tag {
+      font-size: 10px;
+      background: #e3f2fd;
+      color: #1565c0;
+      padding: 1px 5px;
+      border-radius: 2px;
+      margin-left: 6px;
+    }
+
+    /* L2Ps inner tabs */
+    .inner-tab-list { margin-top: 4px; }
+    .inner-tab-list .tab-list-item { font-size: 11px; height: 20px; padding: 2px 0.4em; }
+    .rule-hit { color: #c62828; }
+    .rule-ok { color: #2e7d32; }
   </style>
 </head>
 <body>
   <div class="demo-strip">
-    ⚠️ 脱敏演示页 — 界面样式对齐真实 UP-Analyzer，数据均为虚构。按 Esc 关闭 IDE 演示窗。
-    <a href="https://lanshenghai.github.io/UP-Analyzer-showcase/" style="margin-left:12px;color:#0969da;text-decoration:underline">← 返回文档首页</a>
+    ⚠️ 脱敏演示页 — 界面样式对齐真实 UP-Analyzer，数据均为虚构。按 Esc 关闭弹窗。
+    <a href="up-analyzer-extra.html" style="margin-left:12px;color:#0969da;text-decoration:underline">插件生态说明</a>
+    <a href="index.html" style="margin-left:8px;color:#0969da;text-decoration:underline">← 文档首页</a>
   </div>
 
   <div class="app-header">
@@ -362,7 +434,7 @@
     </div>
     <div class="top-right">
       <input class="search-box" placeholder="搜索…" readonly>
-      <button class="p-btn">LogBrowser</button>
+      <button class="p-btn" onclick="showLogBrowser()" title="minilogbrowser 插件">LogBrowser</button>
       <button class="p-btn">TtiTraceHelper</button>
       <button class="p-btn">帮助</button>
       <button class="p-btn p-btn-outlined" onclick="showIdeDemo()" title="演示 IDE 插件（独立窗口）">IDE 演示</button>
@@ -455,7 +527,7 @@
                 <span style="color:#888">|</span>
                 <span class="open-file">打开文件夹</span>
               </div>
-              <div class="isa_info">已加载：合成 KPI 报告 — OK 与 NOK 对比</div>
+              <div class="isa_info">已加载：合成 KPI 报告 — OK 与 NOK 对比（计数器定义由 <b>PMAT</b> 按 Release 自动转换）</div>
               <div class="chart-area">
                 <div class="chart-title">PM 计数器对比 — NRCELL-111</div>
                 <div class="bar-row" id="kpi-bars">
@@ -491,6 +563,18 @@
                 <button class="p-btn p-btn-outlined loaded">选择 Used SCF</button>
                 <button class="p-btn p-btn-outlined loaded">选择 Golden 配置（.xlsm）</button>
               </div>
+              <div class="isa_info">SCF 差异检查（<b>nidd_check</b>）— 已对比 Used vs Golden，发现 3 处偏离 NIDD 默认值</div>
+              <div class="item" style="min-height:120px;margin-bottom:6px">
+                <div class="handler"></div>
+                <div class="fieldset">
+                  <div class="fieldset-legend">SCF 配置差异 — NRCELL-111</div>
+                  <div class="fieldset-body" style="font:12px Courier New,monospace;color:#333">
+                    <span class="rule-hit">Δ</span> NRCELL-111#actDlMuMimo → Used: <b>true</b> · Golden: <b>false</b> · Feature: CB008765<br>
+                    <span class="rule-hit">Δ</span> NRCELL-111#pdcchAggLevel → Used: <b>4</b> · Default: <b>2</b><br>
+                    <span class="rule-ok">✓</span> 其余 1,247 项参数与 Golden 一致
+                  </div>
+                </div>
+              </div>
               <div class="isa_info">OK/NOK 日志组已加载 — 可进行 TTI Trace 对比</div>
               <div class="item" style="min-height:160px">
                 <div class="handler"></div>
@@ -505,20 +589,45 @@
               </div>
             </div>
 
-            <!-- L2Ps Trace placeholder -->
+            <!-- L2Ps Trace -->
             <div class="g5-panel" id="g5-l2ps" style="display:none">
               <div class="open-row">
                 <span class="open-file">打开文件</span>
                 <span style="color:#888">|</span>
                 <span class="open-file">打开文件夹</span>
               </div>
-              <div class="item" style="min-height:240px">
-                <div class="handler"></div>
-                <div class="fieldset">
-                  <div class="fieldset-legend">TTI Trace 时间轴</div>
-                  <div class="fieldset-body">
-                    <div id="trace-timeline" style="display:flex;gap:1px;height:36px;margin-top:8px"></div>
-                    <p style="font-size:11px;color:#888;margin-top:8px">2,847 事件 · 多 UE 调度 · 拖拽缩放</p>
+              <div class="tabs inner-tab-list" id="l2ps-tabs">
+                <ol class="tab-list">
+                  <li class="tab-list-item tab-list-active" data-l2ps="timeline">Scheduling</li>
+                  <li class="tab-list-item" data-l2ps="auto">AutoAnalyzer</li>
+                </ol>
+                <div class="tab-content" style="border:none;padding:0">
+                  <div class="l2ps-panel active" id="l2ps-timeline">
+                    <div class="item" style="min-height:200px">
+                      <div class="handler"></div>
+                      <div class="fieldset">
+                        <div class="fieldset-legend">TTI Trace 时间轴</div>
+                        <div class="fieldset-body">
+                          <div id="trace-timeline" style="display:flex;gap:1px;height:36px;margin-top:8px"></div>
+                          <p style="font-size:11px;color:#888;margin-top:8px">2,847 事件 · 多 UE 调度 · 拖拽缩放</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="l2ps-panel" id="l2ps-auto" style="display:none">
+                    <div class="isa_info">规则引擎（<b>tti_trace_reminder</b>）— 按 1s 时间窗扫描 TTI Trace</div>
+                    <div class="item" style="min-height:200px">
+                      <div class="handler"></div>
+                      <div class="fieldset">
+                        <div class="fieldset-legend">AutoAnalyzer 规则命中</div>
+                        <div class="fieldset-body" style="font:12px Courier New,monospace;color:#333;line-height:1.6">
+                          (1024:3 - 1024:7) <span class="rule-hit">[UE-42] DL grant 连续 3 slot 缺失 → 疑似 HARQ 停滞</span><br>
+                          (1024:5 - 1024:6) <span class="rule-hit">[Cell-111] PDCCH CCE 利用率 &gt; 85% 持续 2 slot</span><br>
+                          (1025:0 - 1025:4) <span class="rule-ok">Cell-112 UL PRB 利用率正常</span><br>
+                          <span style="color:#888">— 共扫描 2,847 事件 · 2 条告警 · 1 条信息</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -535,6 +644,29 @@
       <!-- Other app panels -->
       <div class="tab-panel" id="panel-other">
         <div class="isa_info">本演示聚焦 <b>5G</b> Tab。生产环境中还提供 LTE / RF / eCPRI / CRM / AirPhone / MSI / Troubleshooting。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log Browser mock (minilogbrowser plugin) -->
+  <div class="lb-overlay" id="lb-overlay">
+    <div class="lb-window">
+      <div class="lb-titlebar">
+        <span>Log Browser Lite <span class="lb-tag">minilogbrowser</span></span>
+        <button class="ide-close" onclick="hideLogBrowser()" style="color:#333">✕</button>
+      </div>
+      <div class="lb-toolbar">
+        <span>过滤：</span>
+        <input class="lb-filter" value="ERROR|WARN|calibration" readonly>
+        <button class="p-btn" style="font-size:11px">搜索</button>
+      </div>
+      <div class="lb-body">
+        <span style="color:#888">2026-03-04 12:00:01.234</span> [INFO] RMOD_L-1 calibration session started<br>
+        <span style="color:#888">2026-03-04 12:00:02.891</span> [INFO] <span class="lb-hl">calibration</span> RX chain 1: beamformingSubbandIdx=3<br>
+        <span style="color:#888">2026-03-04 12:00:03.102</span> <span class="lb-hl" style="color:#c62828">[WARN]</span> <span class="lb-hl">calibration</span> historyLog frame 1024 slot 5: retry count=2<br>
+        <span style="color:#888">2026-03-04 12:00:04.556</span> <span class="lb-hl" style="color:#c62828">[ERROR]</span> bfcali decoder: unexpected magic 0xaabbcce3<br>
+        <span style="color:#888">2026-03-04 12:00:05.001</span> [INFO] <span class="lb-hl">calibration</span> completed for RMOD_L-1<br>
+        <span style="color:#888;margin-top:8px;display:block">— 演示数据 · 真实插件支持正则过滤、书签、多文件 Tab</span>
       </div>
     </div>
   </div>
@@ -645,9 +777,24 @@
       }
     }
 
+    // L2Ps inner tab switching
+    document.querySelectorAll('#l2ps-tabs .tab-list-item').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#l2ps-tabs .tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+        tab.classList.add('tab-list-active');
+        const isAuto = tab.dataset.l2ps === 'auto';
+        document.getElementById('l2ps-timeline').style.display = isAuto ? 'none' : 'block';
+        document.getElementById('l2ps-auto').style.display = isAuto ? 'block' : 'none';
+      });
+    });
+
+    function showLogBrowser() { document.getElementById('lb-overlay').classList.add('show'); }
+    function hideLogBrowser() { document.getElementById('lb-overlay').classList.remove('show'); }
     function showIdeDemo() { document.getElementById('ide-overlay').classList.add('show'); }
     function hideIdeDemo() { document.getElementById('ide-overlay').classList.remove('show'); }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') hideIdeDemo(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { hideIdeDemo(); hideLogBrowser(); }
+    });
 
     // Auto-demo for video: cycle 5G tabs
   function autoDemo() {

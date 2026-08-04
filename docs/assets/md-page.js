@@ -5,6 +5,7 @@
     { href: 'demo.html', label: '在线演示' },
     { href: 'about.html', label: '项目介绍' },
     { href: 'architecture.html', label: '架构设计' },
+    { href: 'up-analyzer-extra.html', label: '插件生态' },
     { href: 'ai-investigation.html', label: 'AI 调查' },
     { href: 'sample-report.html', label: '报告样例' },
     { href: 'demo-video-script.html', label: '视频分镜' },
@@ -57,6 +58,8 @@
             name = 'recording-guide.html';
           } else if (href.indexOf('architecture') >= 0) {
             name = 'architecture.html';
+          } else if (href.indexOf('up-analyzer-extra') >= 0) {
+            name = 'up-analyzer-extra.html';
           }
           a.setAttribute('href', name);
         });

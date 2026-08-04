@@ -221,6 +221,15 @@
     .stats-heatmap .avg-col { background: #ffcc80 !important; font-weight: bold; }
     .stats-heatmap tr.avg-row th, .stats-heatmap tr.avg-row td { background: #e1bee7 !important; font-weight: bold; }
 
+    /* Scheduling CsvTable (5G_Schedule_Table.json) */
+    .sched-scroll { overflow: auto; max-height: 420px; margin: 4px; border: 1px solid #ccc; }
+    .sched-table { border-collapse: collapse; font-size: 9px; font-family: Verdana, sans-serif; white-space: nowrap; }
+    .sched-table th { background: #f0f0f0; border: 1px solid #bbb; padding: 3px 5px; position: sticky; top: 0; z-index: 1; font-weight: normal; }
+    .sched-table td { border: 1px solid #ddd; padding: 2px 4px; }
+    .sched-table tr.row-hl td { background: #A4E5A4; }
+    .sched-table tr.row-nack td { background: #F5F692; }
+    .sched-table .col-name { color: #0000ee; font-weight: bold; }
+
     /* overlays */
     .lb-overlay, .ide-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35);
@@ -518,6 +527,36 @@
         statsHeatmapTable('Average CSI-RS Schedule Count Table', 32, 10, 87);
     }
 
+    function scheduleTableView() {
+      const cols = ['time','line','name','csListEvent/reason/dciFormat','raState/HARQ','callType/ueType','ueAddCause/Priority','CQI/SINR','MCS','numOfPrb','HARQ ID','K1/K2','RV'];
+      const rows = [
+        ['20:15:31.024','1842','dlPreSchedData','ENTRYBUFFER','','SA','INITIAL_ACCESS','','','','','',''],
+        ['20:15:31.028','1843','dlFdSchedData','DL_10_MSG2','ACK','SA','INITIAL_ACCESS','14.2','27','48','3','4','0'],
+        ['20:15:31.156','1851','ulPreSchedData','ENTRYBUFFER','','SA','INITIAL_ACCESS','','','','','',''],
+        ['20:15:31.160','1852','ulFdSchedData','UL_10_MSG3','OK','SA','INITIAL_ACCESS','12.8','22','36','1','','0'],
+        ['20:15:31.288','1860','dlPreSchedData','ENTRYBUFFER','','SA','ATTACHED','','','','','',''],
+        ['20:15:31.292','1861','dlFdSchedData','DL_10_SCH','ACK','SA','ATTACHED','15.1','28','120','5','5','0'],
+        ['20:15:31.420','1869','dlFdSchedData','DL_10_SCH','NACK','SA','ATTACHED','13.4','24','96','5','5','1'],
+        ['20:15:31.548','1877','dlFdSchedData','DL_10_SCH','ACK','SA','ATTACHED','15.0','28','128','2','5','0'],
+        ['20:15:31.676','1885','ulFdSchedData','UL_10_SCH','OK','SA','ATTACHED','11.9','25','64','0','','0'],
+        ['20:15:31.804','1893','dlPreTdBlockUeData','BLOCKED','','SA','ATTACHED','','','','','',''],
+        ['20:15:31.932','1901','dlFdSchedData','DL_10_SCH','ACK','NONCA','ATTACHED','16.2','29','135','7','5','0'],
+        ['20:15:32.060','1909','ulFdSchedData','UL_10_SCH','NOK','NONCA','ATTACHED','10.5','21','52','1','','1'],
+      ];
+      const rowClass = ['','row-hl','','row-hl','','row-hl','row-nack','row-hl','row-hl','','row-hl','row-nack'];
+      let th = cols.map(c => '<th>' + c + '</th>').join('');
+      let tr = rows.map((r, i) => {
+        const cls = rowClass[i] ? ' class="' + rowClass[i] + '"' : '';
+        const cells = r.map((c, j) => '<td' + (j === 2 ? ' class="col-name"' : '') + '>' + c + '</td>').join('');
+        return '<tr' + cls + '>' + cells + '</tr>';
+      }).join('');
+      return '<div class="tti-toolbar">' +
+        '<button class="p-btn preview-on">Preview Enabled</button>' +
+        '<button class="p-btn p-btn-outlined">Expand All</button><button class="p-btn p-btn-outlined">Collapse All</button><button class="p-btn p-btn-outlined">Save Page</button></div>' +
+        '<div class="isa_info" style="margin:4px 8px;font-size:11px">Scheduling / lcrId 481 / rnti 40993 — CsvTable (5G_Schedule_Table)</div>' +
+        '<div class="sched-scroll"><table class="sched-table"><tr>' + th + '</tr>' + tr + '</table></div>';
+    }
+
     function l2psSubTabPanel(defaultSub, subViews) {
       const dlSubTabs = L2PS_DL_SUB.map(t =>
         '<li class="tab-list-item' + (t === defaultSub ? ' tab-list-active' : '') + '" data-l2ps-sub="' + t + '">' + t + '</li>'
@@ -534,7 +573,7 @@
       const tabs = L2PS_TABS.map(t => '<li class="tab-list-item' + (t==='DL'?' tab-list-active':'') + '" data-l2ps="' + t + '">' + t + '</li>').join('');
       const dlSubViews = { Cell: dlCellView(), Statistics: statisticsView() };
       const dlBody = l2psSubTabPanel('Cell', dlSubViews);
-      const schedulingBody = l2psSubTabPanel('Statistics', { Statistics: statisticsView(), Cell: dlCellView() });
+      const schedulingBody = scheduleTableView();
       const bodies = {
         DL: dlBody,
         UL: item('UL Cell', heatmap(14, 4, i => 'hsl(200,'+(35+(i%10)*5)+'%,'+(50+(i%6)*4)+'%)'), 160),

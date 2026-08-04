@@ -241,7 +241,13 @@
     .stats-heatmap td.cell-high { color: #fff; font-size: 8px; }
     .stats-heatmap td.cell-low { background: #f8f8f8 !important; color: #444; }
     .stats-heatmap .avg-col { background: #ffcc80 !important; color: #333 !important; font-weight: bold; }
+    .stats-heatmap .total-col { background: #ffcc80 !important; color: #333 !important; font-weight: bold; }
     .stats-heatmap tr.avg-row th, .stats-heatmap tr.avg-row td { background: #e1bee7 !important; font-weight: bold; color: #333; }
+    .stats-heatmap td.cell-empty { background: #fff !important; color: transparent; }
+    .stats-heatmap td.cell-mid { color: #fff; font-size: 8px; background: #7b68ee !important; }
+    .stats-block-head { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px; position: relative; }
+    .stats-block-head .stats-title { margin: 0; flex: 1; text-align: center; }
+    .stats-icons { position: absolute; right: 8px; display: flex; gap: 4px; font-size: 11px; color: #666; cursor: pointer; }
 
     /* Scheduling CsvTable (5G_Schedule_Table.json) */
     .sched-scroll { overflow: auto; max-height: 420px; margin: 4px; border: 1px solid #ccc; }
@@ -567,6 +573,99 @@
         statsHeatmapTable('Average Used PRBs Table', 32, 10, 173, 'prb');
     }
 
+    function rachCell(seed, r, c, mode) {
+      const hash = (seed + r * 13 + c * 29) % 100;
+      if (hash < 52) return { disp: '', norm: 0, cls: 'cell-empty', num: 0 };
+      if (mode === 'power') {
+        const disp = (-118 + (hash % 26)).toFixed(1);
+        return { disp, norm: 0.45 + hash / 180, cls: 'cell-high', num: parseFloat(disp) };
+      }
+      if (mode === 'ta') {
+        const disp = String(hash % 160);
+        return { disp, norm: 0.35 + hash / 140, cls: hash % 4 === 0 ? 'cell-mid' : 'cell-high', num: parseFloat(disp) };
+      }
+      const disp = String(1 + (hash % 7));
+      return { disp, norm: 0.55 + hash / 110, cls: 'cell-high', num: parseFloat(disp) };
+    }
+
+    function rachStatsTable(title, seed, mode) {
+      const rowCount = 4, colCount = 10;
+      let html = '<div class="stats-block"><div class="stats-block-head"><div class="stats-title">' + title + '</div>' +
+        '<div class="stats-icons"><span>⤢</span><span>📋</span><span>⋯</span></div></div><div class="stats-scroll"><table class="stats-heatmap"><tr><th></th>';
+      for (let c = 0; c < colCount; c++) html += '<th>' + c + '</th>';
+      html += '<th class="total-col">total</th></tr>';
+      const rowTotals = [];
+      for (let r = 0; r < rowCount; r++) {
+        html += '<tr><th>' + r + '</th>';
+        let rowSum = 0, hasNum = 0;
+        for (let c = 0; c < colCount; c++) {
+          const cell = rachCell(seed, r, c, mode);
+          if (cell.num) { rowSum += cell.num; hasNum++; }
+          const bg = cell.cls === 'cell-empty' ? '' : ' style="background:' + heatColor(cell.norm) + '"';
+          html += '<td class="' + cell.cls + '"' + bg + '>' + cell.disp + '</td>';
+        }
+        const total = mode === 'power' && hasNum ? (rowSum / hasNum).toFixed(1) : (rowSum || '').toString();
+        rowTotals.push(rowSum);
+        html += '<td class="total-col">' + (total || '') + '</td></tr>';
+      }
+      html += '<tr class="avg-row"><th>avg</th>';
+      for (let c = 0; c < colCount; c++) {
+        let colSum = 0, n = 0;
+        for (let r = 0; r < rowCount; r++) {
+          const cell = rachCell(seed, r, c, mode);
+          if (cell.num) { colSum += cell.num; n++; }
+        }
+        const v = mode === 'power' && n ? (colSum / n).toFixed(1) : (n ? Math.round(colSum / n) : '');
+        html += '<td>' + v + '</td>';
+      }
+      const grand = rowTotals.reduce((a, b) => a + b, 0);
+      html += '<td class="total-col">' + (mode === 'power' ? (grand / Math.max(1, rowCount)).toFixed(1) : grand) + '</td></tr></table></div></div>';
+      return html;
+    }
+
+    function rachStatisticsView() {
+      return '<div class="tti-toolbar">' +
+        '<button class="p-btn preview-on">Preview Enabled</button>' +
+        '<button class="p-btn p-btn-outlined">Expand All</button><button class="p-btn p-btn-outlined">Collapse All</button><button class="p-btn p-btn-outlined">Save Page</button></div>' +
+        '<div class="selected-range"><b>Selected Range:</b><div class="range-times">' +
+        '<span>2026-07-29 20:13:33</span><span>2026-07-29 20:16:05</span><span>2026-07-29 20:16:17</span></div></div>' +
+        statsRangeBar() +
+        rachStatsTable('MSG1: Total Received Table', 11, 'count') +
+        rachStatsTable('MSG1: Average Power in dBm Table', 23, 'power') +
+        rachStatsTable('MSG1: Average initialTA Table', 37, 'ta') +
+        rachStatsTable('MSG2: Total Scheduled Table', 51, 'count') +
+        rachStatsTable('MSG3: Total Received Table', 67, 'count');
+    }
+
+    function rachUeTableView() {
+      const rows = [
+        ['31406','20:15:31.024','preambleId=42 · TA=18','DL_10_MSG2 · beam=3','tx1 · DTX'],
+        ['31407','20:15:31.288','preambleId=17 · TA=22','DL_10_MSG2 · beam=1','tx1 · OK'],
+        ['31408','20:15:31.548','preambleId=55 · TA=9','DL_10_MSG2 · beam=2','tx2 · NOK'],
+      ];
+      const tr = rows.map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('');
+      return '<div class="tti-toolbar">' +
+        '<button class="p-btn preview-on">Preview Enabled</button>' +
+        '<button class="p-btn p-btn-outlined">Expand All</button><button class="p-btn p-btn-outlined">Collapse All</button></div>' +
+        '<div class="isa_info" style="margin:4px 8px;font-size:11px">RACH / UE Table — 5G_RACH_UE_Table.json</div>' +
+        '<div class="sched-scroll"><table class="sched-table"><tr><th>tempCrnti</th><th>time</th><th>MSG1</th><th>MSG2</th><th>MSG3</th></tr>' + tr + '</table></div>';
+    }
+
+    function rachSubTabPanel(defaultSub, subViews) {
+      const tabs = ['Statistic list', 'UE Table'].map(t =>
+        '<li class="tab-list-item' + (t === defaultSub ? ' tab-list-active' : '') + '" data-rach-sub="' + t + '">' + t + '</li>'
+      ).join('');
+      const bodies = ['Statistic list', 'UE Table'].map(t =>
+        '<div class="rach-sub-body" data-rach-sub-body="' + t + '" style="display:' + (t === defaultSub ? 'block' : 'none') + '">' + subViews[t] + '</div>'
+      ).join('');
+      return '<div class="tabs rach-sub-tabs"><ol class="tab-list">' + tabs + '</ol><div class="tab-content" style="border:none;padding:4px 0">' + bodies + '</div></div>';
+    }
+
+    function rachPanel() {
+      const views = { 'Statistic list': rachStatisticsView(), 'UE Table': rachUeTableView() };
+      return rachSubTabPanel('Statistic list', views);
+    }
+
     function scheduleTableView() {
       const cols = ['time','line','name','csListEvent/reason/dciFormat','raState/HARQ','callType/ueType','ueAddCause/Priority','CQI/SINR','MCS','numOfPrb','HARQ ID','K1/K2','RV'];
       const rows = [
@@ -618,7 +717,7 @@
         DL: dlBody,
         UL: item('UL Cell', heatmap(14, 4, i => 'hsl(200,'+(35+(i%10)*5)+'%,'+(50+(i%6)*4)+'%)'), 160),
         PDCCH: item('PDCCH CCE Usage', sparkline([30,45,62,88,92,85,70,55,40,35,50,65,80,75,60,45]), 140),
-        RACH: item('RACH Statistics', table(['Slot','Msg1','Msg2','Msg3'], [['641:16','4','4','3'],['641:17','2','2','2']])),
+        RACH: rachPanel(),
         BwpSwitch: item('BwpSwitch', '<div class="mono">UE-17042 BWP switch: BWP#0 → BWP#1 @ sfn 641:18</div>'),
         DPA: item('DPA DAI Table', table(['UE','DAI','HARQ'], [['17042','0','ACK'],['17043','1','NACK']])),
         PagingOrSib: item('PagingOrSib', '<div class="mono">SIB1 scheduled · Paging occasion slot 641:20</div>'),
@@ -803,6 +902,7 @@
       wireSubTabs('#ap-tab-list', 'ap');
       wireSnapTabs();
       wireL2psTabs();
+      wireRachTabs();
       wireCompTabs();
       wireLogTabs();
       document.body.addEventListener('click', e => {
@@ -897,6 +997,25 @@
             b.style.display = b.getAttribute('data-l2ps-sub-body') === k ? 'block' : 'none';
           });
         }
+      });
+    }
+
+    function wireRachTabs() {
+      const panel = document.getElementById('g5-l2ps');
+      if (!panel) return;
+      panel.addEventListener('click', e => {
+        const tab = e.target.closest('[data-rach-sub]');
+        if (!tab || !tab.closest('.rach-sub-tabs')) return;
+        e.stopPropagation();
+        const container = tab.closest('.rach-sub-tabs');
+        const list = tab.closest('.tab-list');
+        if (!list || !container) return;
+        list.querySelectorAll('.tab-list-item').forEach(t => t.classList.remove('tab-list-active'));
+        tab.classList.add('tab-list-active');
+        const k = tab.getAttribute('data-rach-sub');
+        container.querySelectorAll('.rach-sub-body').forEach(b => {
+          b.style.display = b.getAttribute('data-rach-sub-body') === k ? 'block' : 'none';
+        });
       });
     }
 

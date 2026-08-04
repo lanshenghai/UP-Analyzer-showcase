@@ -1,113 +1,113 @@
-# AI Investigation Workflow
+# AI 调查流水线
 
-> Overview of the staged root-cause analysis pipeline integrated into the IDE extension.  
-> All examples use desensitized identifiers.
+> IDE 插件中分阶段根因分析流水线的概述。  
+> 所有示例均使用脱敏标识。
 
-## Problem
+## 问题背景
 
-Regression investigations in telecom software follow a repeatable but expert-dependent path:
+电信软件中的回归调查遵循可重复但依赖专家的路径：
 
-1. Read defect report → understand claimed symptom
-2. Load OK and NOK logs into analysis tools
-3. Quantify counter/KPI deltas with correct time windows
-4. Trace counter writers to code call sites
-5. Determine mechanism (invocation gap vs computation gap)
-6. Attribute to a candidate code change
-7. Challenge the hypothesis (adversarial review)
+1. 读缺陷报告 → 理解声称的症状
+2. 将 OK / NOK 日志载入分析工具
+3. 用正确时间窗口量化计数器 / KPI 差异
+4. 将计数器写入方追溯到代码调用点
+5. 判定机制（调用缺口 vs 计算缺口）
+6. 归因到候选代码变更
+7. 对抗式审查挑战假设
 
-Each step has failure modes: wrong time window, wrong counter, premature conclusion, hallucinated code paths.
+每一步都有失败模式：错误时间窗、错误计数器、过早下结论、幻觉代码路径。
 
-## Solution: Staged Pipeline with Gates
+## 方案：带 Gate 的分阶段流水线
 
-Instead of one giant prompt, the workflow splits into **stages** with **deterministic gates**:
+不用一个巨大 Prompt，而是拆成**阶段** + **确定性 Gate**：
 
 ```
                     ┌─────────────┐
                     │   Planner   │
-                    │ orchestrates│
+                    │   编排各阶段  │
                     └──────┬──────┘
                            │
      ┌─────────────────────┼─────────────────────┐
      ▼                     ▼                     ▼
 ┌─────────┐          ┌─────────┐          ┌──────────┐
-│ Worker  │          │ Reviewer│          │   Gate   │
-│ executes│─────────▶│challenges│─────────▶│ pass/fail│
+│ Worker  │          │Reviewer │          │   Gate   │
+│  执行   │─────────▶│  挑战   │─────────▶│ 通过/拒绝 │
 └─────────┘          └─────────┘          └────┬─────┘
                                                │
-                                    pass → next stage
-                                    fail → retry or halt
+                                    通过 → 下一阶段
+                                    失败 → 重试或中止
 ```
 
-### Stage A — Working Set
+### Stage A — 工作集
 
-**Goal:** Define which counters/KPIs are relevant to the reported symptom.
+**目标：** 定义与报告症状相关的计数器 / KPI。
 
-**Gate:** At least one primary counter identified with parser path.
+**Gate：** 至少确定一个主计数器及其解析路径。
 
-### Stage B — Quantification
+### Stage B — 量化
 
-**Goal:** Compare OK vs NOK with correct PM windows, steady-state rules, load comparability.
+**目标：** 在正确 PM 窗口、稳态规则、负载可比前提下对比 OK vs NOK。
 
-**Gate:** Statistically significant delta confirmed (or symptom ruled out).
+**Gate：** 确认统计显著差异（或排除症状）。
 
-### Stage C — Call-Site Handoff
+### Stage C — 调用点交接
 
-**Goal:** Map the primary counter to code paths that invoke its writer function.
+**目标：** 将主计数器映射到调用其写入函数的代码路径。
 
-**Gate:** `primarySuspectCounter` assigned with call-site evidence.
+**Gate：** 分配 `primarySuspectCounter` 并有调用点证据。
 
-### Stage D — Mechanism
+### Stage D — 机制
 
-**Goal:** Classify the gap type:
-- **Invocation gap:** writer called fewer times (code path skipped)
-- **Computation gap:** writer called same times but values differ
+**目标：** 分型缺口类型：
+- **调用缺口（invocation gap）：** 写入函数调用次数减少（代码路径被跳过）
+- **计算缺口（computation gap）：** 调用次数相同但数值不同
 
-**Gate:** Mechanism typed with evidence tier (Type-1 git diff, Type-2 behavioral delta).
+**Gate：** 机制已分型，并有证据层级（Type-1 git diff、Type-2 行为差异）。
 
-### Stage E — Adversarial Review
+### Stage E — 对抗式审查
 
-**Goal:** Independent reviewer challenges the hypothesis. Must check configuration parity, alternative explanations, and evidence gaps.
+**目标：** 独立审查者挑战假设，须检查配置一致性、替代解释与证据缺口。
 
-**Gate:** Verdict `HOLDS` or `REFUTED`.
+**Gate：** 裁决 `HOLDS` 或 `REFUTED`。
 
-## Dual Entry Points
+## 双入口
 
-| Command | Mode | Use case |
-|---------|------|----------|
-| `/stage-*` | Validate only | Prompt engineering, A/B testing |
-| `/investigate` | Planner + commit | Production end-to-end runs |
+| 命令 | 模式 | 用途 |
+|------|------|------|
+| `/stage-*` | 仅校验 | Prompt 工程、A/B 测试 |
+| `/investigate` | Planner + 提交状态 | 生产端到端运行 |
 
-This separation allows iterating on individual stage prompts without corrupting committed investigation state.
+分离两者可在迭代各阶段 Prompt 时不污染已提交的调查状态。
 
-## Anti-Hallucination Measures
+## 反幻觉措施
 
-| Technique | What it prevents |
-|-----------|------------------|
-| Deterministic gates | Skipping evidence collection |
-| `curl`-based data access | Fabricated log contents |
-| Working set pinning | Counter drift mid-investigation |
-| Adversarial review stage | Confirmation bias |
-| Separate validate/commit modes | Accidental state corruption during experiments |
-| Evidence tiers (Type-1/2/3) | Mixing code-diff facts with behavioral inference |
+| 技术 | 防止的问题 |
+|------|-----------|
+| 确定性 Gate | 跳过证据收集 |
+| 基于 `curl` 的数据访问 | 编造日志内容 |
+| 工作集钉死 | 调查中计数器漂移 |
+| 对抗式审查阶段 | 确认偏误 |
+| 校验/提交模式分离 | 实验时误改状态 |
+| 证据层级（Type-1/2/3） | 混淆代码 diff 事实与行为推断 |
 
-## Prompt Optimization Loop
+## Prompt 优化闭环
 
-A separate evaluation harness measures whether prompt changes improve root-cause hit rate on fixed fixture cases — rather than relying on subjective "feels better" iteration.
+独立评测框架在固定夹具案例上衡量 Prompt 改动是否提高根因命中率，而非凭感觉迭代。
 
 ```
-Deploy plugin → Run fixture case → Score against gold report
-    → Gap analysis → Edit prompts → Keep best iteration → Repeat
+部署插件 → 跑固定案例 → 对照金标准报告打分
+    → 差距分析 → 改 Prompt → 保留最佳轮次 → 重复
 ```
 
-Constraints: generalize, zero answer leakage, delete rules before adding new ones.
+约束：泛化、零答案泄露、删规则优先于加规则。
 
-## Example Output
+## 输出示例
 
-See [sample-investigation-report.md](../examples/sample-investigation-report.md) for a complete desensitized report.
+完整脱敏报告见 [sample-investigation-report.md](../examples/sample-investigation-report.md)。
 
-## What This Demonstrates (For Interviewers)
+## 对面试官说明的价值
 
-- **AI engineering**, not AI demo: state machines, gates, evaluation loops
-- **Domain depth**: understanding PM counters, invocation vs computation gaps
-- **Product thinking**: the pipeline encodes expert workflow, not generic chat
-- **Iteration discipline**: measured prompt optimization instead of prompt sprawl
+- **AI 工程**而非 AI 演示：状态机、Gate、评测闭环
+- **领域深度**：理解 PM 计数器、调用 vs 计算缺口
+- **产品思维**：流水线编码专家工作流，而非通用聊天
+- **迭代纪律**：可测量的 Prompt 优化，而非 Prompt 膨胀

@@ -16,144 +16,144 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                     IDE Layer (2026+)                            │
+│                     IDE 层（2026+）                               │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
-│  │ Slash cmds  │  │ Prompt lib   │  │ Stage A–E orchestration  │ │
-│  │ /query etc. │  │ + knowledge  │  │ Planner/Worker/Reviewer  │ │
+│  │ 斜杠命令     │  │ Prompt 库    │  │ Stage A–E 编排           │ │
+│  │ /query 等   │  │ + 知识库     │  │ Planner/Worker/Reviewer  │ │
 │  └──────┬──────┘  └──────┬───────┘  └───────────┬────────────┘ │
 │         └────────────────┴──────────────────────┘              │
 │                            │ ide_integration.json                │
-│                            │ parser_servers/*.json (per session) │
+│                            │ parser_servers/*.json（每会话）      │
 └────────────────────────────┼─────────────────────────────────────┘
-                             │ HTTP (localhost, curl --noproxy)
+                             │ HTTP（localhost，curl --noproxy）
 ┌────────────────────────────▼─────────────────────────────────────┐
-│                   Desktop Shell (Electron + React)               │
+│                   桌面壳（Electron + React）                      │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────────────┐  │
-│  │ Snapshot │ │ KPI      │ │ Syslog   │ │ Compare / Report  │  │
-│  │ workflow │ │ dashboard│ │ browser  │ │ cross-version     │  │
+│  │ Snapshot │ │ KPI      │ │ Syslog   │ │ 对比 / 报告        │  │
+│  │ 工作流   │ │ 仪表盘   │ │ 浏览器   │ │ 跨版本             │  │
 │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────────┬─────────┘  │
 │       └────────────┴────────────┴─────────────────┘              │
-│                            │ spawn / IPC                           │
+│                            │ 子进程 / IPC                          │
 └────────────────────────────┼─────────────────────────────────────┘
                              │
         ┌────────────────────┼────────────────────┐
         ▼                    ▼                    ▼
 ┌───────────────┐  ┌─────────────────┐  ┌──────────────────┐
-│ Embedded      │  │ Decode Engine   │  │ Release System   │
-│ Python 3.12   │  │ (TtiTraceHelper)│  │ S3 · MSI/AppImage│
-│ 500+ parsers  │  │ auto-detect     │  │ code signing     │
-│ parserServer  │  │ multi-product   │  │ What's New       │
+│ 嵌入式         │  │ 解码引擎         │  │ 发布系统          │
+│ Python 3.12   │  │（TtiTraceHelper）│  │ S3 · MSI/AppImage │
+│ 500+ 解析脚本  │  │ 自动识别产品     │  │ 代码签名          │
+│ parserServer  │  │ 多产品线         │  │ 更新说明          │
 └───────────────┘  └─────────────────┘  └──────────────────┘
 ```
 
 ---
 
-## Component Responsibilities
+## 组件职责
 
-### Desktop Shell (Electron + React)
+### 桌面壳（Electron + React）
 
-- File drop / folder selection for engineering log bundles
-- Tab-based navigation across functional domains
-- Interactive charts (Plotly / D3) for time-series and spatial data
-- Session management: each parsed dataset registers a `parserServer` instance
+- 拖放 / 选择工程日志包目录
+- 按功能域 Tab 导航
+- 交互式图表（Plotly / D3）展示时序与空间数据
+- 会话管理：每份解析数据注册一个 `parserServer` 实例
 
-### Embedded Python Runtime
+### 嵌入式 Python 运行时
 
-- Bundled interpreter (Windows + Linux) — users never install Python manually
-- `parserServer` exposes parsed modules as HTTP endpoints on localhost
-- 500+ scripts organized by domain (trace, snapshot, KPI, syslog, PCAP, etc.)
-- Output schema stable enough for IDE agents to discover and query programmatically
+- 捆绑解释器（Windows + Linux），用户无需自行安装 Python
+- `parserServer` 在 localhost 上以 HTTP 端点暴露解析模块
+- 500+ 脚本按域组织（Trace、Snapshot、KPI、Syslog、PCAP 等）
+- 输出 schema 稳定，供 IDE Agent 程序化发现与查询
 
-### Decode Engine (TtiTraceHelper)
+### 解码引擎（TtiTraceHelper）
 
-Extracted in 2022 when binary trace decoding became shared across product lines:
+2022 年从 GUI 中拆出，因二进制 Trace 解码成为多产品线共性能力：
 
-| Before | After |
-|--------|-------|
-| Per-page decoder scripts | Unified engine with product auto-detection |
-| Manual product/version selection | Version probe + on-demand decoder fetch |
-| GUI release tied to decoder changes | Engine updates independently |
+| 之前 | 之后 |
+|------|------|
+| 各页面独立解码脚本 | 统一引擎 + 产品自动识别 |
+| 手工选产品/版本 | 版本探测 + 按需拉取解码器 |
+| GUI 发布与解码器变更绑定 | 引擎可独立演进 |
 
-Capabilities: multi-threaded decode, large file chunking, GUI + CLI modes, 90+ unit tests.
+能力：多线程解码、大文件分块、GUI + CLI 双模式、90+ 单元测试。
 
-### IDE Extension
+### IDE 插件
 
-- Writes `ide_integration.json` with environment metadata and parser instance registry
-- Provides slash commands for AI agents (`/query`, `/status`, `/investigate`, etc.)
-- Agents use `curl --noproxy '*'` against `parser_servers/*.json` base URLs
-- Supports local workspace and Remote SSH (extension runs on same host as UP-Analyzer)
+- 写入 `ide_integration.json`，含环境元数据与解析实例注册表
+- 为 AI Agent 提供斜杠命令（`/query`、`/status`、`/investigate` 等）
+- Agent 通过 `curl --noproxy '*'` 访问 `parser_servers/*.json` 中的 baseUrl
+- 支持本地工作区与 Remote SSH（插件与 UP-Analyzer 须在同一主机）
 
-### AI Investigation Pipeline
+### AI 调查流水线
 
-Not a chat wrapper — a **state machine with gates**:
+不是聊天套壳，而是**带 Gate 的状态机**：
 
 ```
-Stage A: Working set definition (which counters / KPIs matter)
-    ↓ Gate: evidence present?
-Stage B: Quantify OK vs NOK (PM windows, steady-state rules)
-    ↓ Gate: gap confirmed?
-Stage C: Call-site handoff (which code paths write the counter)
-    ↓ Gate: primary suspect identified?
-Stage D: Mechanism analysis (invocation gap vs computation gap)
-    ↓ Gate: mechanism typed?
-Stage E: Adversarial review (challenge the hypothesis)
-    ↓ Gate: HOLDS / REFUTED
-Conclusion: candidate commit + caveats
+Stage A：定义工作集（哪些计数器 / KPI 相关）
+    ↓ Gate：证据是否齐备？
+Stage B：量化 OK vs NOK（PM 窗口、稳态规则）
+    ↓ Gate：差异是否确认？
+Stage C：调用点交接（哪些代码路径写入该计数器）
+    ↓ Gate：主嫌疑是否确定？
+Stage D：机制分析（调用缺口 vs 计算缺口）
+    ↓ Gate：机制是否分型？
+Stage E：对抗式审查（挑战假设）
+    ↓ Gate：HOLDS / REFUTED
+结论：候选 commit + 注意事项
 ```
 
-Key design choices:
-- **Planner** orchestrates stages; **Worker** executes; **Reviewer** challenges
-- Deterministic gates block progression without evidence
-- Separate `/stage-*` (validate-only) vs `/investigate` (commit) entry points for prompt iteration
+关键设计：
+- **Planner** 编排阶段；**Worker** 执行；**Reviewer** 挑战
+- 确定性 Gate 阻止无证据时进入下一阶段
+- `/stage-*`（仅校验）与 `/investigate`（提交状态）双入口，便于 Prompt 迭代
 
 ---
 
-## Key Engineering Decisions
+## 关键工程决策
 
-| Decision | Rationale | Trade-off |
-|----------|-----------|-----------|
-| Electron over web app | Local file access, offline, embedded runtime | Larger install size |
-| Embedded Python | Eliminate "works on my machine" | Bundle size + LFS management |
-| Decode engine split | Reuse across GUI, CLI, IDE | More integration surface |
-| localhost HTTP API | Simple for AI agents via curl | Must handle proxy bypass |
-| Stage gates for AI | Reduce hallucinated root causes | More complex prompt engineering |
-| VSIX separate from app | AI features iterate faster than desktop releases | Two release pipelines |
+| 决策 | 理由 | 代价 |
+|------|------|------|
+| Electron 而非 Web | 本地文件访问、离线、嵌入式运行时 | 安装包更大 |
+| 嵌入式 Python | 消除「在我机器上能跑」问题 | 包体积 + LFS 管理 |
+| 解码引擎解耦 | GUI、CLI、IDE 共用 | 集成面更复杂 |
+| localhost HTTP API | AI Agent 用 curl 即可查询 | 须处理代理绕过 |
+| AI 分阶段 Gate | 降低幻觉根因 | Prompt 工程更复杂 |
+| VSIX 与主程序分离 | AI 能力迭代快于桌面发版 | 两条发布流水线 |
 
 ---
 
-## Data Flow: Typical Troubleshooting Session
+## 数据流：典型排障会话
 
 ```
-1. Engineer drops Snapshot folder into desktop app
-2. Shell discovers components, spawns Python parsers per module
-3. parserServer registers session → parser_servers/<pid>.json
-4. IDE extension detects new instance via file watcher
-5. Engineer asks AI: "Compare KPI X between OK and NOK logs"
-6. Agent reads registry → curls parsed_modules → drills into KPI data
-7. For regressions: /investigate runs staged pipeline → structured report
+1. 工程师将 Snapshot 文件夹拖入桌面应用
+2. 外壳发现组件，按模块启动 Python 解析器
+3. parserServer 注册会话 → parser_servers/<pid>.json
+4. IDE 插件通过文件监听发现新实例
+5. 工程师问 AI：「对比 OK 与 NOK 日志中的 KPI X」
+6. Agent 读注册表 → curl parsed_modules → 钻取 KPI 数据
+7. 回归类问题：/investigate 跑分阶段流水线 → 结构化报告
 ```
 
 ---
 
-## Compatibility Governance
+## 兼容性治理
 
-Production challenge: base station software changes log formats every release.
+生产挑战：基站软件每个 Release 都会改日志格式。
 
-Strategy:
-- Test fixtures per release train (synthetic IDs, no customer data)
-- CI regression on parser outputs
-- Graceful degradation when unknown fields appear
-- `What's New` changelog tied to release compatibility matrix
+策略：
+- 按 Release 列车维护测试夹具（合成 ID，无客户数据）
+- CI 回归解析输出
+- 未知字段出现时优雅降级
+- `What's New` 变更日志与版本兼容矩阵绑定
 
-This is why the platform survived 8 years without a rewrite — **compatibility is treated as a first-class feature**, not maintenance overhead.
+平台能活过 8 年未推倒重来，是因为**把兼容性当作一等特性**，而非维护负担。
 
 ---
 
-## What Is NOT in This Repo
+## 本仓库不包含的内容
 
-- Proprietary protocol parsers and decoder binaries
-- Internal artifact servers and authentication
-- Customer/site identifiers in test data
-- Production IDE extension VSIX (install via internal distribution only)
+- 专有协议解析器与解码器二进制
+- 内部制品库与鉴权
+- 测试数据中的客户/站点标识
+- 生产环境 IDE 插件 VSIX（仅通过内部分发安装）
 
-See [desensitization-checklist.md](desensitization-checklist.md) before publishing any screenshots or recordings.
+发布截图或录屏前请参阅 [desensitization-checklist.md](desensitization-checklist.md)。

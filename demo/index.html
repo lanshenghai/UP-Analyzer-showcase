@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UP-Analyzer</title>
-  <link rel="icon" href="../assets/icon.png">
+  <link rel="icon" href="assets/icon.png">
   <style>
     /* Matched to UP-Analyzer src/tabs/styles.css + src/index.css */
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -357,14 +357,14 @@
   <div class="app-header">
     <div class="version">
       <label>v12.1.1</label>
-      <span class="whats-new">What's New</span>
+      <span class="whats-new">更新说明</span>
     </div>
     <div class="top-right">
-      <input class="search-box" placeholder="Search..." readonly>
+      <input class="search-box" placeholder="搜索…" readonly>
       <button class="p-btn">LogBrowser</button>
       <button class="p-btn">TtiTraceHelper</button>
-      <button class="p-btn">Help</button>
-      <button class="p-btn p-btn-outlined" onclick="showIdeDemo()" title="演示 IDE 插件（独立窗口）">IDE Demo</button>
+      <button class="p-btn">帮助</button>
+      <button class="p-btn p-btn-outlined" onclick="showIdeDemo()" title="演示 IDE 插件（独立窗口）">IDE 演示</button>
     </div>
   </div>
 
@@ -402,14 +402,14 @@
           </ol>
 
           <div class="tab-content" style="position:relative">
-            <div class="spinner-mask" id="spinner"><span>Parsing…</span></div>
+            <div class="spinner-mask" id="spinner"><span>解析中…</span></div>
 
             <!-- Snapshot view -->
             <div class="g5-panel active" id="g5-snapshot">
               <div class="open-row">
-                <span class="open-file" onclick="simulateLoad()">Open Files</span>
+                <span class="open-file" onclick="simulateLoad()">打开文件</span>
                 <span style="color:#888">|</span>
-                <span class="open-file" onclick="simulateLoad()">Open Folder</span>
+                <span class="open-file" onclick="simulateLoad()">打开文件夹</span>
               </div>
               <div class="files-block" id="files-block" style="display:none">
                 <div class="tags">
@@ -432,13 +432,13 @@
                   <div class="item">
                     <div class="handler"></div>
                     <div class="fieldset">
-                      <div class="fieldset-legend">Cell Mapping</div>
+                      <div class="fieldset-legend">小区映射</div>
                       <div class="fieldset-body">
                         <table class="data-table">
-                          <tr><th>Cell ID</th><th>lcrId</th><th>Band</th><th>PCI</th><th>Status</th></tr>
-                          <tr><td>NRCELL-111</td><td>111</td><td>n78</td><td>111</td><td>Active</td></tr>
-                          <tr><td>NRCELL-112</td><td>112</td><td>n78</td><td>112</td><td>Active</td></tr>
-                          <tr><td>NRCELL-113</td><td>113</td><td>n78</td><td>113</td><td>Inactive</td></tr>
+                          <tr><th>小区 ID</th><th>lcrId</th><th>频段</th><th>PCI</th><th>状态</th></tr>
+                          <tr><td>NRCELL-111</td><td>111</td><td>n78</td><td>111</td><td>激活</td></tr>
+                          <tr><td>NRCELL-112</td><td>112</td><td>n78</td><td>112</td><td>激活</td></tr>
+                          <tr><td>NRCELL-113</td><td>113</td><td>n78</td><td>113</td><td>未激活</td></tr>
                         </table>
                       </div>
                     </div>
@@ -450,13 +450,13 @@
             <!-- KPI Analyzer view -->
             <div class="g5-panel" id="g5-kpi" style="display:none">
               <div class="open-row">
-                <span class="open-file">Open Files</span>
+                <span class="open-file">打开文件</span>
                 <span style="color:#888">|</span>
-                <span class="open-file">Open Folder</span>
+                <span class="open-file">打开文件夹</span>
               </div>
-              <div class="isa_info">Loaded: synthetic KPI report — OK vs NOK comparison</div>
+              <div class="isa_info">已加载：合成 KPI 报告 — OK 与 NOK 对比</div>
               <div class="chart-area">
-                <div class="chart-title">PM Counter Comparison — NRCELL-111</div>
+                <div class="chart-title">PM 计数器对比 — NRCELL-111</div>
                 <div class="bar-row" id="kpi-bars">
                   <div class="bar-group">
                     <div class="bars">
@@ -480,25 +480,25 @@
                     <div class="bar-label">COUNTER_SLOT_CH<br><span style="color:#888">−0.05%</span></div>
                   </div>
                 </div>
-                <p style="font-size:11px;color:#888;margin-top:12px">OK: BLD_000006 · NOK: BLD_000004 · 7×15min steady-state windows</p>
+                <p style="font-size:11px;color:#888;margin-top:12px">OK：BLD_000006 · NOK：BLD_000004 · 7×15 分钟稳态窗口</p>
               </div>
             </div>
 
             <!-- Comparing view -->
             <div class="g5-panel" id="g5-comparing" style="display:none">
               <div class="compare-btns">
-                <button class="p-btn p-btn-outlined loaded">Select Used SCF</button>
-                <button class="p-btn p-btn-outlined loaded">Select Golden configuration (.xlsm)</button>
+                <button class="p-btn p-btn-outlined loaded">选择 Used SCF</button>
+                <button class="p-btn p-btn-outlined loaded">选择 Golden 配置（.xlsm）</button>
               </div>
-              <div class="isa_info">OK/NOK log groups loaded — TTI Trace compare ready</div>
+              <div class="isa_info">OK/NOK 日志组已加载 — 可进行 TTI Trace 对比</div>
               <div class="item" style="min-height:160px">
                 <div class="handler"></div>
                 <div class="fieldset">
-                  <div class="fieldset-legend">TtiTrace Compare — Group A vs Group B</div>
+                  <div class="fieldset-legend">TtiTrace 对比 — A 组 vs B 组</div>
                   <div class="fieldset-body" style="font:12px Courier New,monospace;color:#333">
-                    Group A (OK):  2,847 events · 156ms span · 12 UEs<br>
-                    Group B (NOK): 2,801 events · 156ms span · 12 UEs<br>
-                    <span style="color:#f44336">Δ events: −46 (−1.6%) · scheduler-msg3 path divergence detected</span>
+                    A 组（OK）：2,847 事件 · 156ms 跨度 · 12 UE<br>
+                    B 组（NOK）：2,801 事件 · 156ms 跨度 · 12 UE<br>
+                    <span style="color:#f44336">Δ 事件：−46（−1.6%）· 检测到 scheduler-msg3 路径分歧</span>
                   </div>
                 </div>
               </div>
@@ -507,17 +507,17 @@
             <!-- L2Ps Trace placeholder -->
             <div class="g5-panel" id="g5-l2ps" style="display:none">
               <div class="open-row">
-                <span class="open-file">Open Files</span>
+                <span class="open-file">打开文件</span>
                 <span style="color:#888">|</span>
-                <span class="open-file">Open Folder</span>
+                <span class="open-file">打开文件夹</span>
               </div>
               <div class="item" style="min-height:240px">
                 <div class="handler"></div>
                 <div class="fieldset">
-                  <div class="fieldset-legend">TTI Trace Timeline</div>
+                  <div class="fieldset-legend">TTI Trace 时间轴</div>
                   <div class="fieldset-body">
                     <div id="trace-timeline" style="display:flex;gap:1px;height:36px;margin-top:8px"></div>
-                    <p style="font-size:11px;color:#888;margin-top:8px">2,847 events · Multi-UE scheduling · drag to zoom</p>
+                    <p style="font-size:11px;color:#888;margin-top:8px">2,847 事件 · 多 UE 调度 · 拖拽缩放</p>
                   </div>
                 </div>
               </div>
@@ -525,7 +525,7 @@
 
             <!-- Other g5 panels placeholder -->
             <div class="g5-panel" id="g5-other" style="display:none">
-              <div class="isa_info">Demo: switch to Snapshot / KPI Analyzer / Comparing / L2Ps Trace Analyzer for full views.</div>
+              <div class="isa_info">演示提示：请切换到 Snapshot / KPI Analyzer / Comparing / L2Ps Trace Analyzer 查看完整视图。</div>
             </div>
           </div>
         </div>
@@ -533,7 +533,7 @@
 
       <!-- Other app panels -->
       <div class="tab-panel" id="panel-other">
-        <div class="isa_info">Demo focuses on the <b>5G</b> tab. In production, LTE / RF / eCPRI / CRM / AirPhone / MSI / Troubleshooting are also available.</div>
+        <div class="isa_info">本演示聚焦 <b>5G</b> Tab。生产环境中还提供 LTE / RF / eCPRI / CRM / AirPhone / MSI / Troubleshooting。</div>
       </div>
     </div>
   </div>
@@ -542,7 +542,7 @@
   <div class="ide-overlay" id="ide-overlay">
     <div class="ide-window">
       <div class="ide-titlebar">
-        <span>Cursor — Agent Chat (UP-Analyzer Extension Demo)</span>
+        <span>Cursor — Agent 对话（UP-Analyzer 插件演示）</span>
         <button class="ide-close" onclick="hideIdeDemo()">✕</button>
       </div>
       <div class="ide-body">
@@ -550,22 +550,22 @@
         <div class="ide-main">
           <div class="ide-tabs">
             <div class="ide-tab">code.cpp</div>
-            <div class="ide-tab active">Agent</div>
+            <div class="ide-tab active">智能体</div>
           </div>
           <div class="ide-chat">
             <div class="ide-msg user">&gt; /upa-status</div>
             <div class="ide-msg agent">
-              Reading <code>~/.config/UP-Analyzer/parser_servers/42805.json</code><br>
+              正在读取 <code>~/.config/UP-Analyzer/parser_servers/42805.json</code><br>
               <code>curl --noproxy '*' -s "http://127.0.0.1:4821/_upa/parsed_modules?ai=cursor"</code><br><br>
-              ✓ 1 reachable instance · 38 parsed modules
+              ✓ 1 个可达实例 · 38 个已解析模块
             </div>
-            <div class="ide-msg user">&gt; Compare COUNTER_AVAIL_CH between OK and NOK logs</div>
+            <div class="ide-msg user">&gt; 对比 OK 与 NOK 日志中的 COUNTER_AVAIL_CH</div>
             <div class="ide-msg agent">
-              OK: 568,425,464 · NOK: 534,669,170 · <span style="color:#f48771">Δ −5.94%</span><br>
-              COUNTER_SLOT_CH flat (−0.05%) → suggests <b>invocation gap</b>, not computation gap.<br><br>
+              OK：568,425,464 · NOK：534,669,170 · <span style="color:#f48771">Δ −5.94%</span><br>
+              COUNTER_SLOT_CH 持平（−0.05%）→ 倾向 <b>调用缺口</b>，而非计算缺口。<br><br>
               &gt; /upa-pr-investigate ISSUE-001<br>
-              Stage A ✓ → B ✓ → C ✓ → D ✓ → E: <span style="color:#4ec9b0">HOLDS</span><br>
-              Candidate: <code>abc123def456</code> [CHG-0042]
+              Stage A ✓ → B ✓ → C ✓ → D ✓ → E：<span style="color:#4ec9b0">HOLDS（成立）</span><br>
+              候选 commit：<code>abc123def456</code> [CHG-0042]
             </div>
           </div>
         </div>

@@ -1,49 +1,50 @@
-# Desensitization Checklist
+# 脱敏检查清单
 
-Before publishing screenshots, demo videos, or any public material derived from the production UP-Analyzer:
+在发布源自生产环境 UP-Analyzer 的截图、演示视频或任何公开材料之前，请逐项核对：
 
-## Must Remove or Replace
+## 必须删除或替换
 
-| Category | Examples to scrub | Replacement |
-|----------|-------------------|-------------|
-| Company names | Nokia, Motorola, internal codenames | "Vendor-X", "a telecom equipment company" |
-| Internal URLs | `gitlabe1.ext.net.nokia.com`, proxy hosts | Remove or blur |
-| Site / customer IDs | MRBTS-*, ENB names with real site codes | `SITE-001`, `ENB_9999_000000` |
-| Real Pronto/PR IDs | PR895222, PR891909 | `ISSUE-001`, `CHG-0042` |
-| Internal email domains | `@nokia-sbell.com` | Personal email only |
-| AWS/S3 credentials | Access keys in env vars | Never show terminal with secrets |
-| Colleague names | Team member real names in UI | Blur or use synthetic |
-| Build strings with internal paths | Full SVN/Git internal URLs | Truncate to `Release R3.2.1` |
+| 类别 | 需清理的示例 | 替换方式 |
+|------|-------------|----------|
+| 公司名称 | Nokia、Motorola、内部代号 | 「厂商 X」「某电信设备公司」 |
+| 内部 URL | `gitlabe1.ext.net.nokia.com`、代理主机 | 删除或打码 |
+| 站点/客户 ID | MRBTS-*、带真实站点码的 ENB 名 | `SITE-001`、`ENB_9999_000000` |
+| 真实 Pronto/PR ID | PR895222、PR891909 | `ISSUE-001`、`CHG-0042` |
+| 内部邮箱域 | `@nokia-sbell.com` | 仅个人邮箱 |
+| AWS/S3 凭证 | 环境变量中的 Access Key | 切勿在终端画面中暴露 |
+| 同事姓名 | UI 中的真实姓名 | 打码或使用合成名 |
+| 含内部路径的构建串 | 完整 SVN/Git 内部 URL | 截断为 `Release R3.2.1` |
 
-## Safe to Show
+## 可以展示
 
-- Generic UI layout and navigation structure
-- Synthetic KPI names (e.g., `COUNTER_AVAIL_CH`, `COUNTER_USED_CH`)
-- Architecture diagrams (this repo)
-- Staged investigation **workflow** (not real defect data)
-- Technology stack names (Electron, React, Python, Cursor)
-- Commit counts, version numbers, DAU metrics (rounded)
+- 通用 UI 布局与导航结构
+- 合成 KPI 名称（如 `COUNTER_AVAIL_CH`、`COUNTER_USED_CH`）
+- 架构图（本仓库）
+- 分阶段调查**工作流**（非真实缺陷数据）
+- 技术栈名称（Electron、React、Python、Cursor）
+- Commit 数、版本号、日活指标（取整）
 
-## Screenshot Capture Tips
+## 截图技巧
 
-1. Use **synthetic test data** from `test/data/` paths with `ENB_9999` style IDs
-2. Or use the [interactive mock](../demo/index.html) — zero proprietary content
-3. Blur the Windows title bar if it shows internal hostnames
-4. Crop out email/IM notifications in screen recordings
-5. Run OBS with a **1080p canvas**; scale UI to 125% for readability
+1. 使用 `test/data/` 下 `ENB_9999` 风格的**合成测试数据**
+2. 或使用[在线交互演示](https://lanshenghai.github.io/UP-Analyzer-showcase/) — 零专有内容
+3. 标题栏若显示内部主机名，请打码
+4. 录屏时裁掉邮件/IM 通知
+5. OBS 使用 **1080p** 画布；UI 缩放 125% 便于阅读
 
-## Video-Specific
+## 视频专项
 
-- Narration: say "a 5G base station product" not the vendor name
-- Do not show internal Jira/Pronto web pages
-- If showing IDE: use a generic workspace, not `c:\work\UP-Analyzer`
-- Terminal: use `curl localhost:PORT` with synthetic port numbers
+- 旁白：说「某 5G 基站产品」，不说厂商名
+- 不要录内部 Jira/Pronto 网页
+- 若展示 IDE：用通用工作区路径，不要用 `c:\work\UP-Analyzer`
+- 终端：`curl localhost:PORT` 使用合成端口号
 
-## Legal Note
+## 法律说明
 
-The production codebase is company IP. This showcase repo contains only:
-- Original documentation written for portfolio
-- Synthetic demo HTML
-- Desensitized example reports
+生产代码为公司知识产权。本展示仓库仅含：
 
-Do **not** push any code from `c:\work\UP-Analyzer\` to public GitHub.
+- 为作品集撰写的原创文档
+- 合成演示 HTML
+- 脱敏示例报告
+
+**切勿**将 `c:\work\UP-Analyzer\` 中的代码推送到公开 GitHub。

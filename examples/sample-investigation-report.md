@@ -1,39 +1,39 @@
-# Sample Investigation Report (Desensitized)
+# 调查报告样例（脱敏）
 
-> Synthetic example demonstrating the staged AI investigation output format.  
-> Based on a real regression workflow; all identifiers, vendor names, and code paths are fictional.
+> 展示分阶段 AI 调查输出格式的合成示例。  
+> 基于真实回归工作流；所有标识、厂商名与代码路径均为虚构。
 
-## 1. Problem Confirmation
+## 1. 问题确认
 
-- **Present** — FDD cells CELL-111/112 show `COUNTER_AVAIL_CH` (channel availability) down ~6% after Release R3 upgrade; related KPI `KPI_5115a` increased accordingly.
-- **Scope:** CELL-111 (id 111), CELL-112 (id 112).
-- **Logs:** OK build `R3.2.1_BLD_000006`; NOK build `R3.2.1_BLD_000004`.
+- **存在** — FDD 小区 CELL-111/112 在 Release R3 升级后 `COUNTER_AVAIL_CH`（信道可用性）下降约 6%；相关 KPI `KPI_5115a` 相应上升。
+- **范围：** CELL-111（id 111），CELL-112（id 112）。
+- **日志：** OK 构建 `R3.2.1_BLD_000006`；NOK 构建 `R3.2.1_BLD_000004`。
 
-## 2. PM Window and Quantities
+## 2. PM 窗口与量化
 
-**comparisonContext (Stage B):**
+**comparisonContext（Stage B）：**
 
-- **windowDuration:** OK 09:15–10:45; NOK 11:30–13:00 (7×15min intervals each)
-- **steadyState:** Exclude first 2 intervals after capture start
-- **loadComparable:** Same test line, simulated traffic stability run
-- **normalization:** invocation-skip candidate — `COUNTER_AVAIL_CH` −5.9% vs `COUNTER_SLOT_CH` −0.05%
+- **windowDuration：** OK 09:15–10:45；NOK 11:30–13:00（各 7×15 分钟区间）
+- **steadyState：** 采集开始后排除前 2 个区间
+- **loadComparable：** 同一测试线，模拟业务稳定性运行
+- **normalization：** 调用跳过候选 — `COUNTER_AVAIL_CH` −5.9% vs `COUNTER_SLOT_CH` −0.05%
 
-| Counter | OK | NOK | Δ | Writer function |
-|---------|---:|---:|---:|-----------------|
+| 计数器 | OK | NOK | Δ | 写入函数 |
+|--------|---:|---:|---:|----------|
 | COUNTER_AVAIL_CH | 568,425,464 | 534,669,170 | −5.94% | `ChannelAvailUpdater::updateBothCounters` |
 | COUNTER_USED_CH | 254,691,046 | 259,215,824 | +1.78% | `ChannelUsedUpdater::updateUsed` |
 | COUNTER_SLOT_CH | 8,614,918 | 8,610,688 | −0.05% | `SlotCounterUpdater::updateDataSlot` |
 
-## 3. Working Set (Stage A)
+## 3. 工作集（Stage A）
 
 - `COUNTER_AVAIL_CH` → ws-avail
 - `COUNTER_USED_CH` → ws-used
 - `COUNTER_SLOT_CH` → ws-slot
 - `KPI_5115a` → ws-kpi
 
-## 4. Call-Site Handoff (Stage C)
+## 4. 调用点交接（Stage C）
 
-**primarySuspectCounter:** `COUNTER_AVAIL_CH`
+**primarySuspectCounter：** `COUNTER_AVAIL_CH`
 
 | entryPath | callSite |
 |-----------|----------|
@@ -42,42 +42,42 @@
 | regular-sched | `scheduler/selection/Counters.cpp:58` |
 | initial-access | `scheduler/Msg3Handler.cpp:222` |
 
-All `pm-only`; `invocationCount: open`.
+均为 `pm-only`；`invocationCount: open`。
 
-## 5. Mechanism (Stage D)
+## 5. 机制（Stage D）
 
-| Field | Value |
-|-------|-------|
-| subtype | `invocation gap` |
+| 字段 | 值 |
+|------|-----|
+| subtype | `invocation gap`（调用缺口） |
 | focus | `behavior-control` |
 | disposition | `open` |
 | Type-1 | `bodyIdentical: true` on `ChannelAvailUpdater::updateBothCounters` |
 
-**Type-2 (blanked):** `Msg3Armer::hasCommittedMsg3ToArm` — NOK adds `actUlSlotAgg()` gate; `feedsWriterPath: scheduler-msg3`; `coverage: addressed`.
+**Type-2（blanked）：** `Msg3Armer::hasCommittedMsg3ToArm` — NOK 增加 `actUlSlotAgg()` 门控；`feedsWriterPath: scheduler-msg3`；`coverage: addressed`。
 
-**gitUnlock candidate:** `abc123def456` [CHG-0042] — `Msg3Armer.cpp`
+**gitUnlock 候选：** `abc123def456` [CHG-0042] — `Msg3Armer.cpp`
 
-## 6. Adversarial Review (Stage E)
+## 6. 对抗式审查（Stage E）
 
-**overall:** `HOLDS`
+**overall：** `HOLDS`（成立）
 
-Key verdict: configuration flags identical OK/NOK — NOK armer early-returns via disabled slot aggregation, OK can still arm when enhancement flag is true.
+关键裁决：OK/NOK 配置标志一致 — NOK 侧 armer 因禁用 slot 聚合提前返回，OK 在 enhancement 标志为真时仍可 arm。
 
-## 7. Conclusion
+## 7. 结论
 
-| Item | Result |
-|------|--------|
-| Gap type | Invocation gap (writer path skip, not per-slot value change) |
-| Mechanism | Blanked-slot MSG3 arm gate tightened in NOK → fewer scheduler-msg3 writer invocations |
-| Candidate commit | `abc123def456` [CHG-0042] |
-| Caveats | No trace quantification of msg3 skip share of −5.94%; primary fd path not trace-quantified |
+| 项目 | 结果 |
+|------|------|
+| 缺口类型 | 调用缺口（写入路径跳过，非每时隙数值变化） |
+| 机制 | NOK 收紧 blanked-slot MSG3 arm 门控 → scheduler-msg3 写入调用减少 |
+| 候选 commit | `abc123def456` [CHG-0042] |
+| 注意事项 | 未用 Trace 量化 msg3 跳过占 −5.94% 的比例；主 fd 路径未 Trace 量化 |
 
-## 8. Ruled Out
+## 8. 已排除
 
-- Writer Type-1 code mutation (git diff 0 lines)
-- Computation gap narrative (slot counter flat; pm-only primary)
-- Primary scheduler syntax gates changed OK→NOK (call-site chains `behaviorDelta=same`)
+- 写入方 Type-1 代码变更（git diff 0 行）
+- 计算缺口叙事（时隙计数器持平；主路径为 pm-only）
+- 主调度语法门控 OK→NOK 变更（调用链 `behaviorDelta=same`）
 
 ---
 
-*This report format is produced by the staged investigation pipeline. See [ai-investigation.md](ai-investigation.md) for workflow details.*
+*本报告格式由分阶段调查流水线生成。工作流详见 [ai-investigation.md](../docs/ai-investigation.md)。*

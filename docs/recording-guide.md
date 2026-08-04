@@ -1,112 +1,111 @@
-# Recording Guide
+# 录制指南
 
-## Tools
+## 工具
 
-| Tool | Purpose | Download |
-|------|---------|----------|
-| **OBS Studio** | Screen + mic recording | https://obsproject.com |
-| **ShareX** (optional) | Screenshot capture | https://getsharex.com |
-| **DaVinci Resolve** (optional) | Free video editing | https://blackmagicdesign.com |
-
----
-
-## OBS Setup (Recommended)
-
-### Scene Collection
-
-1. **Scene: Desktop Demo**
-   - Source: Display Capture (primary monitor)
-   - Crop to 1920×1080 if needed
-
-2. **Scene: IDE Demo**
-   - Source: Window Capture → Cursor or VS Code
-   - Add margin for readability
-
-3. **Scene: Browser Mock** (fallback)
-   - Source: Window Capture → Chrome/Edge with `demo/index.html`
-
-### Audio
-
-- Input: Microphone (built-in OK; headset preferred)
-- Noise suppression: OBS filter → Noise Suppression (−30 dB)
-- Test 10 seconds, play back before full recording
-
-### Output Settings
-
-```
-Format:     mp4
-Encoder:    x264 or NVENC (if NVIDIA GPU)
-Resolution: 1920×1080
-FPS:        30
-Bitrate:    8000–12000 Kbps
-```
-
-Path: save to `assets/demo-video.mp4` (gitignored — upload to Bilibili/YouTube instead)
+| 工具 | 用途 | 下载 |
+|------|------|------|
+| **OBS Studio** | 屏幕 + 麦克风录制 | https://obsproject.com |
+| **ShareX**（可选） | 截图 | https://getsharex.com |
+| **DaVinci Resolve**（可选） | 免费视频剪辑 | https://blackmagicdesign.com |
 
 ---
 
-## Recording Workflow
+## OBS 设置（推荐）
+
+### 场景集合
+
+1. **场景：桌面演示**
+   - 来源：显示器采集（主屏）
+   - 如需可裁切为 1920×1080
+
+2. **场景：IDE 演示**
+   - 来源：窗口采集 → Cursor 或 VS Code
+   - 留边距便于阅读
+
+3. **场景：浏览器模拟**（备选）
+   - 来源：窗口采集 → Chrome/Edge 打开 `demo/index.html`
+
+### 音频
+
+- 输入：麦克风（内置可用；耳机麦更佳）
+- 降噪：OBS 滤镜 → 噪声抑制（−30 dB）
+- 正式录制前先录 10 秒试听
+
+### 输出设置
 
 ```
-1. Read through demo-video-script.md once
-2. Do a 30-second test recording → check audio + text readability
-3. Record Scene 2–3 (desktop/mock) as one take
-4. Record Scene 4–5 (IDE) as one take
-5. Record narration for Scene 1 + 6 separately (optional, easier to edit)
-6. Assemble in editor or OBS with scene cuts
-7. Export final MP4
+格式：     mp4
+编码器：   x264 或 NVENC（NVIDIA 显卡）
+分辨率：   1920×1080
+帧率：     30
+码率：     8000–12000 Kbps
 ```
 
-**Tip:** Record narration **after** screen capture if you're not comfortable doing both simultaneously. Match voiceover to the script timestamps in post.
+保存路径：`assets/demo-video.mp4`（已 gitignore — 请上传 B 站/YouTube）
 
 ---
 
-## Screenshot Capture
+## 录制流程
 
-During or after recording, capture these frames:
+```
+1. 通读 demo-video-script.md
+2. 试录 30 秒 → 检查音质与文字清晰度
+3. 一次录完场景 2–3（桌面/模拟页）
+4. 一次录完场景 4–5（IDE）
+5. 场景 1 + 6 旁白可后期单独录（可选）
+6. 在剪辑软件或 OBS 中组接
+7. 导出最终 MP4
+```
+
+**提示：** 若不习惯边录边讲，可先录屏再按分镜稿后期配音。
+
+---
+
+## 截图采集
+
+录制过程中或之后截取以下画面：
 
 ```powershell
-# Open the mock in browser
+# 在浏览器打开演示页
 Start-Process "c:\Users\qrb378\OneDrive\文档\UP-Analyzer-showcase\demo\index.html"
 
-# Use Win+Shift+S for region capture
-# Save to assets/screenshots/ with naming from README
+# Win+Shift+S 区域截图
+# 保存到 assets/screenshots/，命名见 README
 ```
 
-| # | Filename | When to capture |
-|---|----------|-----------------|
-| 1 | `01-snapshot-overview.png` | Snapshot tree fully expanded |
-| 2 | `02-kpi-dashboard.png` | KPI chart with OK/NOK bars |
-| 3 | `03-trace-visualization.png` | Trace timeline view |
-| 4 | `04-ide-integration.png` | Slash command menu visible |
-| 5 | `05-ai-investigation.png` | Stage E conclusion panel |
+| # | 文件名 | 截取时机 |
+|---|--------|----------|
+| 1 | `01-snapshot-overview.png` | Snapshot 树完全展开 |
+| 2 | `02-kpi-dashboard.png` | KPI 柱状图 OK/NOK |
+| 3 | `03-trace-visualization.png` | Trace 时间轴视图 |
+| 4 | `04-ide-integration.png` | 斜杠命令菜单可见 |
+| 5 | `05-ai-investigation.png` | Stage E 结论面板 |
 
 ---
 
-## Using Production App (If Permitted Before Departure)
+## 使用生产环境应用（离职前若仍可用）
 
-1. Load synthetic test data only (`test/data/**/ENB_9999_*`)
-2. Follow [desensitization-checklist.md](desensitization-checklist.md)
-3. Hide/blur: title bar hostname, email tray, internal URLs
-4. Do NOT record: internal GitLab, Pronto web UI, proxy config
-
----
-
-## Upload Checklist
-
-- [ ] Video uploaded (Bilibili / YouTube)
-- [ ] README demo link updated
-- [ ] 5 screenshots committed to `assets/screenshots/`
-- [ ] Final review: no proprietary names visible in video or images
-- [ ] Git push to `github.com/lanshenghai/UP-Analyzer-showcase`
+1. 仅加载合成测试数据（`test/data/**/ENB_9999_*`）
+2. 遵循 [desensitization-checklist.md](desensitization-checklist.md)
+3. 隐藏/打码：标题栏主机名、邮件托盘、内部 URL
+4. **不要**录制：内部 GitLab、Pronto 网页、代理配置
 
 ---
 
-## GitHub Pages (Optional)
+## 上传检查清单
 
-Enable GitHub Pages on the repo to host the interactive mock:
+- [ ] 视频已上传（B 站 / YouTube）
+- [ ] README 中演示视频链接已更新
+- [ ] 5 张截图已提交到 `assets/screenshots/`
+- [ ] 最终检查：视频与图片中无专有名称
+- [ ] 已 `git push` 到 `github.com/lanshenghai/UP-Analyzer-showcase`
 
-1. Repo Settings → Pages → Source: `main` branch, `/demo` folder
-2. URL: `https://lanshenghai.github.io/UP-Analyzer-showcase/`
+---
 
-Or use the `docs/` folder — move `index.html` there if preferred.
+## GitHub Pages
+
+在线演示已部署在：
+
+**https://lanshenghai.github.io/UP-Analyzer-showcase/**
+
+源目录为 `docs/`（`main` 分支）。若需重新配置：仓库 Settings → Pages → Source：`main` / `/docs`。
